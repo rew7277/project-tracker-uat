@@ -1,5 +1,3 @@
-# Project Tracker — v12.1 Enterprise Command Center
-
 # 🚀 ProjectFlow - Railway Deployment (Clean Start)
 
 Deploy your ProjectFlow app to Railway in **3 simple steps**!
@@ -328,8 +326,3 @@ You now have:
 Visit: `https://your-app.railway.app/api/app`
 
 Start managing your projects! 🎉
-
-
-## v12.1 Enterprise Command Center
-
-This build adds an enhanced analytics dashboard, command palette, animated KPI cards, AI-style insights, workload matrix, risk radar, throughput charts, and the `/api/command-center` backend endpoint. See `V12_1_ENTERPRISE_UPGRADE_NOTES.md` for details.

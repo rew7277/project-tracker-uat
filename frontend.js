@@ -70,6 +70,21 @@ const fmtD=d=>{if(!d)return'—';try{return new Date(d).toLocaleDateString('en-U
 const ago=iso=>{const m=Math.floor((Date.now()-new Date(iso))/60000);if(m<1)return'just now';if(m<60)return m+'m ago';if(m<1440)return Math.floor(m/60)+'h ago';return Math.floor(m/1440)+'d ago';};
 const safe=a=>(Array.isArray(a)?a:[]);
 
+
+function SkeletonCard({lines=2,height=90}){
+  return html`
+    <div class="skeleton skeleton-card" style=${{height,borderRadius:12,marginBottom:8}}></div>`;
+}
+function SkeletonRow({width='100%'}){
+  return html`<div class="skeleton skeleton-text" style=${{width}}></div>`;
+}
+function LoadingSpinner({size=32,color='var(--ac)'}){
+  return html`
+    <div style=${{display:'flex',alignItems:'center',justifyContent:'center',padding:24}}>
+      <div style=${{width:size,height:size,border:'3px solid var(--bd)',borderTop:'3px solid '+color,borderRadius:'50%',animation:'sp .7s linear infinite'}}></div>
+    </div>`;
+}
+
 function Av({u,size=32}){
   const imgSrc=(u&&u.avatar_data&&u.avatar_data.startsWith('data:image'))?u.avatar_data:
                (u&&u.avatar&&u.avatar.length>10&&u.avatar.startsWith('data:image'))?u.avatar:null;
@@ -1283,9 +1298,12 @@ function Sidebar({cu,view,setView,onLogout,unread,dmUnread,col,setCol,wsName,dar
     dashboard:    html`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>`, projects:     html`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>`, tasks:        html`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>`, messages:     html`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`, tickets:      html`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M2 9a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v1.5a1.5 1.5 0 0 0 0 3V15a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-1.5a1.5 1.5 0 0 0 0-3V9z"/><line x1="9" y1="7" x2="9" y2="17" strokeDasharray="2 2"/></svg>`, timeline:     html`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="10" y2="14"/><line x1="8" y1="18" x2="14" y2="18"/></svg>`, productivity: html`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg>`, reminders:    html`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`, team:         html`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`, dm:           html`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,
     'ai-docs':    html`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><circle cx="10" cy="13" r="2"/><path d="M20 21l-4.35-4.35"/></svg>`,
     timesheet:    html`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="4" x2="9" y2="9"/><path d="M7 13h2l1 2 2-4 1 2h2"/></svg>`,
+  'command-center': html`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M7 7l3 3-3 3M13 13h4"/></svg>`,
+  sprints:          html`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>`,
+  'risk-radar':     html`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z"/><path d="M12 12L8 8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v2M22 12h-2M12 22v-2M2 12h2"/></svg>`,
   };
   const adminNav=[
-    {id:'dashboard', label:'Dashboard'}, {id:'projects', label:'Projects'}, {id:'tasks', label:'Kanban Board'}, {id:'messages', label:'Channels'}, {id:'dm', label:'Direct Messages'}, {id:'tickets', label:'Tickets'}, {id:'timeline', label:'Timeline Tracker'}, {id:'productivity',label:'Dev Productivity'}, {id:'reminders', label:'Reminders'}, {id:'team', label:'Team Management'}, {id:'ai-docs', label:'AI Docs', badge:'AI'}, {id:'timesheet', label:'Timesheet', badge:'New', hint:'Shift+L'}, ];
+    {id:'dashboard', label:'Dashboard'}, {id:'projects', label:'Projects'}, {id:'tasks', label:'Kanban Board'}, {id:'messages', label:'Channels'}, {id:'dm', label:'Direct Messages'}, {id:'tickets', label:'Tickets'}, {id:'timeline', label:'Timeline Tracker'}, {id:'productivity',label:'Dev Productivity'}, {id:'reminders', label:'Reminders'}, {id:'team', label:'Team Management'}, {id:'ai-docs', label:'AI Docs', badge:'AI'}, {id:'timesheet', label:'Timesheet', badge:'New', hint:'Shift+L'}, {id:'command-center', label:'Command Center', badge:'AI'}, {id:'sprints', label:'Sprint Board'}, {id:'risk-radar', label:'Risk Radar'}, ];
   const devNav=[
     {id:'dashboard', label:'Dashboard'}, {id:'projects', label:'Projects'}, {id:'tasks', label:'Kanban Board'}, {id:'messages', label:'Channels'}, {id:'dm', label:'Direct Messages'}, {id:'tickets', label:'Tickets'}, {id:'timeline', label:'Timeline'}, {id:'reminders', label:'Reminders'}, {id:'timesheet', label:'Timesheet'}, ];
   const baseNavItems=(isAdminManager?adminNav:devNav).filter(it=>
@@ -4242,7 +4260,7 @@ function MemberRow({u,cu,i,total,reload,ROLE_COLORS}){
   const startTotpSetup=async()=>{
     setTotpMsg('');
     // Only self can setup own TOTP; admin can reset others but not setup for them
-    if(u.id!==cu.id){alert('Users must set up their own Authenticator. Use Reset to clear it.');return;}
+    if(u.id!==cu.id){window._pfToast&&window._pfToast('error','2FA Error','Users must set up their own Authenticator. Use Reset to clear it.');return;}
     const r=await api.post('/api/auth/totp/setup',{});
     if(r.error){setTotpMsg(r.error);return;}
     setTotpData(r);setShowTotpSetup(true);setTotpVerifyToken('');
@@ -4264,7 +4282,7 @@ function MemberRow({u,cu,i,total,reload,ROLE_COLORS}){
     setTwoFaLoading(true);
     const r=await api.post('/api/auth/totp/reset',{user_id:u.id});
     setTwoFaLoading(false);
-    if(r.error){alert(r.error);return;}
+    if(r.error){window._pfToast&&window._pfToast('error','Error',r.error);return;}
     setTotpMsg('✓ 2FA reset');
     setTimeout(()=>{setTotpMsg('');reload&&reload();},1200);
   };
@@ -4273,7 +4291,7 @@ function MemberRow({u,cu,i,total,reload,ROLE_COLORS}){
     setTwoFaLoading(true);
     const r=await api.post('/api/auth/toggle-2fa',{user_id:u.id,enabled:!u.two_fa_enabled});
     setTwoFaLoading(false);
-    if(r.error){alert(r.error);}
+    if(r.error){window._pfToast&&window._pfToast('error','Error',r.error);}
     else reload&&reload();
   };
 
@@ -5013,7 +5031,7 @@ function TwoFASettingsCard({cu}){
     if(!window.confirm('Reset Google Authenticator for '+userName+'? They will need to set it up again.'))return;
     setTogglingId(userId);
     const r=await api.post('/api/auth/totp/reset',{user_id:userId});
-    if(r.error){alert(r.error);}
+    if(r.error){window._pfToast&&window._pfToast('error','Error',r.error);}
     else{setUserTfaList(prev=>prev.map(u=>u.id===userId?{...u,totp_configured:false,totp_verified:0}:u));}
     setTogglingId(null);
   };
@@ -5103,7 +5121,7 @@ function WorkspaceSettings({cu,onReload}){
   };
 
   const sendTestEmail=async()=>{
-    if(!testEmail){alert('Please enter an email address');return;}
+    if(!testEmail){window._pfToast&&window._pfToast('error','Missing Email','Please enter an email address');return;}
     setTestingEmail(true);setTestResult(null);
     const r=await api.post('/api/workspace/test-email',{test_email:testEmail});
     setTestingEmail(false);
@@ -5453,7 +5471,7 @@ function SSOSettingsCard({cu,ws}){
   };
 
   const testMeta=async()=>{
-    if(!metaUrl){alert('Enter a metadata URL first');return;}
+    if(!metaUrl){window._pfToast&&window._pfToast('error','Missing URL','Enter a metadata URL first');return;}
     setTesting(true);setTestResult(null);
     const r=await api.post('/api/sso/test-metadata',{metadata_url:metaUrl});
     setTesting(false);
@@ -7204,7 +7222,7 @@ function App(){
   const _hadSession=(()=>{try{return localStorage.getItem('pf_had_session')==='1';}catch{return false;}})();
   const [loading,setLoading]=useState(_hadSession);
   // Read initial view from URL path or ?page= param
-  const VALID_VIEWS=['dashboard','projects','tasks','messages','dm','tickets','timeline','reminders','settings','team','productivity','ai-docs','timesheet'];
+  const VALID_VIEWS=['dashboard','projects','tasks','messages','dm','tickets','timeline','reminders','settings','team','productivity','ai-docs','timesheet','command-center','sprints','risk-radar','gantt'];
   // Also treat /projects/<id> as valid
   useEffect(()=>{
     try{
@@ -7828,6 +7846,9 @@ function App(){
             ${baseView==='productivity'&&(cu.role==='Admin'||cu.role==='Manager')?html`<${ProductivityView} cu=${cu} tasks=${scopedTasks} projects=${scopedProjects} users=${scopedUsers}/>`:null}
             ${baseView==='ai-docs'?html`<${AiDocsView} cu=${cu} projects=${scopedProjects} tasks=${scopedTasks} users=${data.users}/>`:null}
             ${baseView==='timesheet'?html`<${TimesheetView} cu=${cu} teams=${data.teams} users=${data.users} projects=${scopedProjects} tasks=${scopedTasks}/>`:null}
+            ${baseView==='command-center'?html`<${CommandCenter} cu=${cu} tasks=${scopedTasks} projects=${scopedProjects} users=${scopedUsers} onNav=${setView} activeTeam=${activeTeam}/>`:null}
+            ${baseView==='sprints'?html`<${SprintBoard} cu=${cu} tasks=${scopedTasks} projects=${scopedProjects} users=${scopedUsers} reload=${load}/>`:null}
+            ${baseView==='risk-radar'?html`<${RiskRadar} cu=${cu} tasks=${scopedTasks} projects=${scopedProjects} users=${scopedUsers} onNav=${setView}/>`:null}
             </div>
           <//>
         </div>
@@ -7854,10 +7875,28 @@ function App(){
             ${(()=>{
               const q=(globalSearch||'').trim().toLowerCase();
               if(!q||q.length<1)return html`
-  <div style=${{padding:'16px 18px'}}> 
-    <div style=${{fontSize:12,color:'var(--tx2)',fontWeight:600,marginBottom:8}}>Search by:</div>
-    <div style=${{display:'flex',gap:8,flexWrap:'wrap'}}>
-      ${[['Task ID','T-015-305','#1d4ed8'],['Bug','T-xxx bug','#b91c1c'],['Ticket ID','TK-xxx','#c2410c'],['Subtask','ST-xxx','#475569'],['Project name','SecOps','#15803d']].map(([label,ex,color])=>html`
+  <div style=${{padding:'12px 16px'}}> 
+    <div style=${{fontSize:11,color:'var(--tx3)',fontWeight:700,marginBottom:8,textTransform:'uppercase',letterSpacing:'.06em'}}>Quick Actions</div>
+    <div style=${{display:'flex',flexDirection:'column',gap:2,marginBottom:12}}>
+      ${[
+        {label:'Command Center',icon:'⚡',view:'command-center',hint:'AI dashboard'},
+        {label:'Sprint Board',icon:'🏃',view:'sprints',hint:'Sprint planning'},
+        {label:'Risk Radar',icon:'🎯',view:'risk-radar',hint:'Risk overview'},
+        {label:'Timeline',icon:'📅',view:'timeline',hint:'Gantt view'},
+        {label:'Productivity',icon:'📈',view:'productivity',hint:'Metrics'},
+        {label:'AI Docs',icon:'🤖',view:'ai-docs',hint:'AI assistant'},
+      ].map(item=>html`
+        <div class="cmd-item" onClick=${()=>{_setView(item.view);setShowGlobalSearch(false);}}>
+          <div class="cmd-item-icon">${item.icon}</div>
+          <span style=${{fontWeight:600,color:'var(--tx)'}}>${item.label}</span>
+          <span style=${{fontSize:11,color:'var(--tx3)',marginLeft:8}}>${item.hint}</span>
+          <span class="cmd-kbd">↵</span>
+        </div>
+      `)}
+    </div>
+    <div style=${{fontSize:11,color:'var(--tx3)',fontWeight:700,marginBottom:6,textTransform:'uppercase',letterSpacing:'.06em'}}>Search by</div>
+    <div style=${{display:'flex',gap:6,flexWrap:'wrap'}}>
+      ${[['Task ID','T-015-305','#1d4ed8'],['Bug','T-xxx bug','#b91c1c'],['Ticket ID','TK-xxx','#c2410c'],['Project name','SecOps','#15803d']].map(([label,ex,color])=>html`
         <div style=${{padding:'4px 10px',borderRadius:7,background:color+'11',border:'1px solid '+color+'33',fontSize:11,color,cursor:'pointer',fontWeight:600}}
           onClick=${()=>setGlobalSearch(ex)}>
           ${label}
@@ -7964,131 +8003,6 @@ function App(){
     ${showReminders?html`<${RemindersPanel} onClose=${()=>{setShowReminders(false);load();}} onReload=${load}/>`:null}`;
 }
 
-
-
-/* ═════════════════════════════════════════════════════════════════════════════
-   V12.1 Enterprise Command Center UI override
-   Adds richer visualization, animated KPI cards, risk radar, workload matrix,
-   AI-style recommendations, command palette and polished empty/loading states.
-   ═════════════════════════════════════════════════════════════════════════════ */
-function PTToast({msg,onClose}){
-  useEffect(()=>{if(!msg)return;const t=setTimeout(onClose,3600);return()=>clearTimeout(t);},[msg]);
-  if(!msg)return null;
-  return html`<div class="pt-toast"><b>${msg.title||'ProjectFlow'}</b><span>${msg.body||msg}</span><button onClick=${onClose}>×</button></div>`;
-}
-function PTSkeleton({h=110}){return html`<div class="pt-skeleton" style=${{height:h}}></div>`;}
-function PTKpi({label,value,sub,icon,tone='blue',onClick}){
-  return html`<button class=${'pt-kpi '+tone} onClick=${onClick||(()=>{})}>
-    <span class="pt-kpi-glow"></span><span class="pt-kpi-icon">${icon}</span>
-    <span class="pt-kpi-label">${label}</span><b>${value}</b><small>${sub}</small>
-  </button>`;
-}
-function PTCommandPalette({open,onClose,onNav,items}){
-  const [q,setQ]=useState('');
-  const hits=useMemo(()=>safe(items).filter(x=>(x.label+' '+(x.hint||'')).toLowerCase().includes(q.toLowerCase())).slice(0,8),[items,q]);
-  useEffect(()=>{if(!open)setQ('');},[open]);
-  if(!open)return null;
-  return html`<div class="pt-cmd-backdrop" onClick=${onClose}>
-    <div class="pt-cmd" onClick=${e=>e.stopPropagation()}>
-      <div class="pt-cmd-head"><span>⌘</span><input autoFocus placeholder="Search actions, views, projects, tasks..." value=${q} onInput=${e=>setQ(e.target.value)}/><button onClick=${onClose}>Esc</button></div>
-      <div class="pt-cmd-list">
-        ${hits.length?hits.map(x=>html`<button key=${x.id} onClick=${()=>{onClose();x.action?x.action():onNav&&onNav(x.view||x.id);}}><b>${x.label}</b><small>${x.hint||''}</small></button>`):html`<div class="pt-empty-mini">No action found. Try “blocked”, “timeline”, “tickets”.</div>`}
-      </div>
-    </div>
-  </div>`;
-}
-function Dashboard({cu,tasks,projects,users,onNav,activeTeam,teams,setTeamCtx}){
-  const t=safe(tasks), p=safe(projects), u=safe(users);
-  const [cc,setCc]=useState(()=>{try{return JSON.parse(sessionStorage.getItem('pt_cc_cache')||'null')}catch(e){return null}});
-  const [loading,setLoading]=useState(!cc),[toast,setToast]=useState(null),[cmd,setCmd]=useState(false),[tab,setTab]=useState('workspace');
-  useEffect(()=>{let dead=false; const url='/api/command-center'+(activeTeam?'?team_id='+activeTeam.id:''); setLoading(!cc); setTimeout(()=>api.get(url).then(d=>{if(dead)return;if(d&&!d.error){setCc(d);try{sessionStorage.setItem('pt_cc_cache',JSON.stringify(d))}catch(e){}}}).finally(()=>!dead&&setLoading(false)),50); return()=>{dead=true};},[activeTeam&&activeTeam.id,t.length,p.length]);
-  useEffect(()=>{const h=e=>{if((e.ctrlKey||e.metaKey)&&String(e.key).toLowerCase()==='k'){e.preventDefault();setCmd(true)}if(e.key==='Escape')setCmd(false)};window.addEventListener('keydown',h);return()=>window.removeEventListener('keydown',h);},[]);
-  const active=t.filter(x=>!['completed','backlog'].includes(x.stage)), done=t.filter(x=>x.stage==='completed'), blocked=t.filter(x=>x.stage==='blocked');
-  const k=cc&&cc.kpis?cc.kpis:{}; const health=cc?cc.health_score:Math.max(65,100-blocked.length*8); const risk=cc?cc.risk_score:100-health;
-  let stageData=cc?safe(cc.stage_distribution).map(x=>({name:(STAGES[x.name]&&STAGES[x.name].label)||x.name,value:x.value})):[]; if(!stageData.length)stageData=[{name:'Planning',value:Math.max(1,p.length)},{name:'Development',value:Math.max(1,active.length)},{name:'Testing',value:1},{name:'Blocked',value:blocked.length},{name:'Completed',value:Math.max(1,done.length)}];
-  let priData=cc?safe(cc.priority_distribution).map(x=>({name:(PRIS[x.name]&&PRIS[x.name].label)||x.name,value:x.value})):[]; if(!priData.length)priData=[{name:'Critical',value:t.filter(x=>x.priority==='critical').length||1},{name:'High',value:t.filter(x=>x.priority==='high').length||2},{name:'Medium',value:t.filter(x=>x.priority==='medium').length||3},{name:'Low',value:t.filter(x=>x.priority==='low').length||1}];
-  let proj=cc?safe(cc.project_health):[]; if(!proj.length)proj=p.length?p.slice(0,8).map(x=>({id:x.id,name:x.name,progress:x.progress||0,tasks:t.filter(y=>y.project===x.id).length,done:t.filter(y=>y.project===x.id&&y.stage==='completed').length,blocked:t.filter(y=>y.project===x.id&&y.stage==='blocked').length,status:t.some(y=>y.project===x.id&&y.stage==='blocked')?'At Risk':((x.progress||0)>75?'Healthy':'Watch')})):[{name:'Create your first project',progress:0,tasks:0,done:0,blocked:0,status:'Watch'}];
-  let workload=cc?safe(cc.workload):[]; if(!workload.length)workload=u.slice(0,10).map(x=>({name:x.name,role:x.role,active:t.filter(y=>y.assignee===x.id&&!['completed','backlog'].includes(y.stage)).length,blocked:t.filter(y=>y.assignee===x.id&&y.stage==='blocked').length,critical:t.filter(y=>y.assignee===x.id&&y.priority==='critical').length,color:x.color||'#2563eb'}));
-  let insights=cc?safe(cc.insights):[]; if(!insights.length)insights=[{type:'good',title:'Portfolio is stable',detail:'No urgent overdue or blocked concentration detected from the current workspace data.'},{type:'ai',title:'AI reports enabled',detail:'Weekly status, RCA, blockers and workload recommendations are available inside AI Insights.'}];
-  const throughput=(cc&&cc.throughput&&cc.throughput.length)?cc.throughput:[{day:'Mon',created:2,completed:1,hours:4},{day:'Tue',created:3,completed:2,hours:6},{day:'Wed',created:1,completed:3,hours:5},{day:'Thu',created:4,completed:2,hours:7},{day:'Fri',created:2,completed:4,hours:3}];
-  const roadmap=proj.map((x,i)=>({name:x.name,start:i*11+4,end:Math.min(96,i*11+28),status:x.status,progress:x.progress||0}));
-  const heat=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map((d,i)=>({d,v:[2,4,7,3,6,1,0][i]+blocked.length}));
-  const cmds=[{id:'projects',label:'Open Projects',hint:'portfolio and roadmap',view:'projects'},{id:'tasks',label:'Open Kanban',hint:'tasks, blockers and priorities',view:'tasks'},{id:'timeline',label:'Open Timeline',hint:'gantt and milestones',view:'timeline'},{id:'tickets',label:'Open Tickets',hint:'SLA and incidents',view:'tickets'},{id:'timesheet',label:'Open Timesheet',hint:'hours and capacity',view:'timesheet'},{id:'ai-docs',label:'Open AI Docs',hint:'docs, RCA and reports',view:'ai-docs'}];
-  const pill=(id,label)=>html`<button class=${'pt-tab '+(tab===id?'active':'')} onClick=${()=>setTab(id)}>${label}</button>`;
-  return html`<div class="ptx-shell">
-    <style>${`@keyframes ptxFade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}@keyframes ptxShimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}.ptx-shell{height:100%;overflow:auto;padding:18px 22px 28px;background:radial-gradient(circle at top left,rgba(37,99,235,.12),transparent 32%),radial-gradient(circle at 80% 0,rgba(124,58,237,.10),transparent 28%),var(--bg);color:var(--tx)}.pt-hero{border:1px solid var(--bd);border-radius:24px;padding:22px;background:linear-gradient(135deg,rgba(255,255,255,.94),rgba(248,250,252,.80));box-shadow:0 20px 70px rgba(15,23,42,.10);animation:ptxFade .28s ease both}.dark .pt-hero{background:linear-gradient(135deg,rgba(30,30,34,.96),rgba(22,22,26,.86))}.pt-hero-grid{display:grid;grid-template-columns:1.3fr .7fr;gap:18px;align-items:center}.pt-eyebrow{display:inline-flex;padding:5px 10px;border-radius:999px;background:rgba(37,99,235,.09);color:#1d4ed8;font-size:11px;font-weight:900;text-transform:uppercase}.pt-hero h1{margin:10px 0 6px;font-size:28px;letter-spacing:-.04em}.pt-hero p{margin:0;color:var(--tx2);font-size:13px}.pt-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:15px}.pt-action,.pt-tab{border:1px solid var(--bd);background:var(--sf);color:var(--tx);padding:9px 12px;border-radius:13px;font-weight:850;font-size:12px;cursor:pointer;transition:.18s}.pt-action:hover,.pt-tab:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(15,23,42,.12)}.pt-health{border-radius:22px;padding:17px;background:linear-gradient(135deg,#07111f,#111827);color:#fff}.pt-score{font-size:48px;font-weight:950;letter-spacing:-.06em}.pt-ring{height:10px;background:rgba(255,255,255,.12);border-radius:999px;overflow:hidden}.pt-ring i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#22c55e,#60a5fa);width:var(--w)}.pt-risk{display:flex;justify-content:space-between;margin-top:9px;font-size:11px;color:rgba(255,255,255,.72)}.pt-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}.pt-tab{border-radius:999px;color:var(--tx2)}.pt-tab.active{background:#2563eb;color:#fff;border-color:#2563eb}.pt-kpis{display:grid;grid-template-columns:repeat(5,minmax(140px,1fr));gap:12px;margin-top:14px}.pt-kpi{position:relative;overflow:hidden;text-align:left;border:1px solid var(--bd);border-radius:18px;padding:14px;background:var(--sf);cursor:pointer;min-height:112px;transition:.18s;animation:ptxFade .4s ease both}.pt-kpi:hover{transform:translateY(-3px);box-shadow:0 16px 40px rgba(15,23,42,.11)}.pt-kpi-glow{position:absolute;right:-30px;top:-30px;width:90px;height:90px;border-radius:999px;background:rgba(37,99,235,.14)}.pt-kpi-label{display:block;margin-top:8px;color:var(--tx3);font-size:10px;text-transform:uppercase;font-weight:900;letter-spacing:.08em}.pt-kpi b{display:block;font-size:27px;letter-spacing:-.04em;margin-top:2px}.pt-kpi small{color:var(--tx2);font-size:11px}.pt-kpi.red .pt-kpi-glow{background:rgba(239,68,68,.18)}.pt-kpi.amber .pt-kpi-glow{background:rgba(245,158,11,.18)}.pt-kpi.green .pt-kpi-glow{background:rgba(34,197,94,.16)}.pt-kpi.purple .pt-kpi-glow{background:rgba(124,58,237,.18)}.pt-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:14px;margin-top:14px}.pt-grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:14px}.pt-card{background:var(--sf);border:1px solid var(--bd);border-radius:20px;padding:15px;box-shadow:0 12px 36px rgba(15,23,42,.06);animation:ptxFade .45s ease both}.pt-card h3{margin:0 0 12px;font-size:14px}.pt-card-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.pt-chip{font-size:10px;font-weight:900;color:var(--tx3);background:var(--sf2);border:1px solid var(--bd);border-radius:999px;padding:4px 8px}.pt-list{display:flex;flex-direction:column;gap:9px}.pt-row{display:grid;grid-template-columns:1fr 72px 74px;gap:10px;align-items:center;padding:10px;border:1px solid var(--bd2);border-radius:14px;background:var(--sf2);cursor:pointer}.pt-bar{height:9px;background:rgba(148,163,184,.16);border-radius:999px;overflow:hidden}.pt-bar i{display:block;height:100%;background:linear-gradient(90deg,#2563eb,#22c55e);border-radius:999px}.pt-status{font-size:10px;font-weight:900;border-radius:999px;padding:5px 8px;text-align:center}.pt-status.ok{background:rgba(34,197,94,.12);color:#16a34a}.pt-status.watch{background:rgba(245,158,11,.14);color:#d97706}.pt-status.risk{background:rgba(239,68,68,.12);color:#dc2626}.pt-insight,.pt-work{display:grid;grid-template-columns:auto 1fr;gap:10px;padding:10px;border:1px solid var(--bd2);border-radius:14px;background:var(--sf2)}.pt-dot{width:10px;height:10px;border-radius:99px;margin-top:3px}.pt-insight b,.pt-work b{font-size:12px}.pt-insight p,.pt-work small{margin:3px 0 0;color:var(--tx2);font-size:11px}.pt-empty-mini{padding:14px;text-align:center;color:var(--tx3);font-size:12px}.pt-timeline{min-height:230px;padding:12px 8px}.pt-rowline{display:grid;grid-template-columns:180px 1fr;gap:10px;align-items:center;margin:12px 0}.pt-track{position:relative;height:28px;border-radius:999px;background:var(--sf2);overflow:hidden}.pt-lane{position:absolute;top:4px;height:20px;border-radius:999px;background:linear-gradient(90deg,#2563eb,#7c3aed);left:var(--l);width:var(--w)}.pt-heat{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}.pt-heat div{min-height:64px;border-radius:14px;border:1px solid var(--bd);background:rgba(37,99,235,var(--o));padding:8px}.pt-dep{display:flex;align-items:center;gap:8px;margin:8px 0}.pt-node{padding:9px 11px;border-radius:12px;background:var(--sf2);border:1px solid var(--bd);font-weight:800;font-size:11px}.pt-arrow{flex:1;height:1px;background:linear-gradient(90deg,#2563eb,#7c3aed)}.pt-toast{position:fixed;right:24px;bottom:24px;z-index:80;background:var(--sf);border:1px solid var(--bd);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.25);padding:12px 42px 12px 14px;min-width:280px}.pt-toast b{display:block;font-size:13px}.pt-toast span{display:block;color:var(--tx2);font-size:12px;margin-top:3px}.pt-toast button{position:absolute;right:8px;top:8px;border:0;background:transparent;color:var(--tx2);font-size:18px}.pt-cmd-backdrop{position:fixed;inset:0;background:rgba(2,6,23,.38);backdrop-filter:blur(5px);z-index:70;display:grid;place-items:start center;padding-top:10vh}.pt-cmd{width:min(640px,92vw);background:var(--sf);border:1px solid var(--bd);border-radius:20px;box-shadow:0 30px 90px rgba(0,0,0,.35);overflow:hidden}.pt-cmd-head{display:flex;align-items:center;gap:10px;padding:13px;border-bottom:1px solid var(--bd)}.pt-cmd-head input{flex:1;border:0;outline:0;background:transparent;color:var(--tx);font-size:15px}.pt-cmd-list{padding:8px;max-height:380px;overflow:auto}.pt-cmd-list button{width:100%;display:flex;justify-content:space-between;gap:14px;padding:11px;border:0;border-radius:13px;background:transparent;color:var(--tx);cursor:pointer;text-align:left}.pt-cmd-list button:hover{background:var(--sf2)}@media(max-width:1100px){.pt-hero-grid,.pt-grid{grid-template-columns:1fr}.pt-grid3{grid-template-columns:1fr}.pt-kpis{grid-template-columns:repeat(2,1fr)}}@media(max-width:640px){.pt-kpis{grid-template-columns:1fr}.ptx-shell{padding:12px}.pt-hero h1{font-size:23px}}`}</style>
-    <${PTToast} msg=${toast} onClose=${()=>setToast(null)}/><${PTCommandPalette} open=${cmd} onClose=${()=>setCmd(false)} onNav=${onNav} items=${cmds}/>
-    <section class="pt-hero"><div class="pt-hero-grid"><div><span class="pt-eyebrow">Enterprise command center</span><h1>Good day, ${(cu&&cu.name||'there').split(' ')[0]} — portfolio health is ${health}/100.</h1><p>${p.length} projects, ${active.length} active tasks, ${blocked.length} blockers. Old workspace operations are preserved; new executive analytics are layered on top.</p><div class="pt-actions"><button class="pt-action" onClick=${()=>setCmd(true)}>⌘K Command</button><button class="pt-action" onClick=${()=>setTab('timeline')}>Gantt / Roadmap</button><button class="pt-action" onClick=${()=>onNav&&onNav('tasks:stage:blocked')}>Blockers</button><button class="pt-action" onClick=${()=>setTab('ai')}>AI Summary</button></div></div><div class="pt-health"><div><small>${loading?'Syncing live data':'Live portfolio health'}</small><div class="pt-score">${health}</div></div><div class="pt-ring" style=${{'--w':health+'%'}}><i></i></div><div class="pt-risk"><span>Risk score ${risk}</span><span>${cc?fmtD(cc.generated_at):'loading'}</span></div></div></div></section>
-    <div class="pt-tabs">${pill('workspace','Workspace')}${pill('command','Command Center')}${pill('analytics','Analytics')}${pill('timeline','Gantt / Roadmap')}${pill('ai','AI Insights')}</div>
-    ${tab==='workspace'?html`<div><div class="pt-kpis"><${PTKpi} label="Projects" value=${p.length} sub="active portfolio" icon="📁" onClick=${()=>onNav&&onNav('projects')}/><${PTKpi} label="Active Tasks" value=${active.length} sub=${done.length+' completed'} icon="✅" tone="green" onClick=${()=>onNav&&onNav('tasks')}/><${PTKpi} label="Blocked" value=${blocked.length} sub="needs unblock" icon="🚧" tone="red" onClick=${()=>onNav&&onNav('tasks:stage:blocked')}/><${PTKpi} label="Team Members" value=${u.length} sub="workspace users" icon="👥" tone="purple" onClick=${()=>onNav&&onNav('team')}/><${PTKpi} label="Due Soon" value=${k.due_soon_tasks||0} sub={(k.overdue_tasks||0)+' overdue'} icon="⏳" tone="amber" onClick=${()=>onNav&&onNav('timeline')}/></div><div class="pt-grid"><div class="pt-card"><div class="pt-card-head"><h3>Today’s focus</h3><span class="pt-chip">Operational</span></div><div class="pt-list">${active.slice(0,6).map(x=>html`<div class="pt-insight"><span class="pt-dot" style=${{background:x.stage==='blocked'?'#dc2626':'#2563eb'}}></span><div><b>${x.title||x.name||'Untitled task'}</b><p>${x.stage||'active'} · ${x.priority||'medium'} · ${x.due||'no due date'}</p></div></div>`)}${!active.length?html`<div class="pt-empty-mini">No active tasks assigned. Operational dashboard is ready.</div>`:null}</div></div><div class="pt-card"><div class="pt-card-head"><h3>Activity heatmap & quick actions</h3><span class="pt-chip">Fast</span></div><div class="pt-actions"><button class="pt-action" onClick=${()=>onNav&&onNav('projects')}>Projects</button><button class="pt-action" onClick=${()=>onNav&&onNav('tasks')}>Kanban</button><button class="pt-action" onClick=${()=>onNav&&onNav('timesheet')}>Timesheet</button><button class="pt-action" onClick=${()=>onNav&&onNav('tickets')}>Tickets</button></div><div style=${{marginTop:12}} class="pt-heat">${heat.map(h=>html`<div style=${{'--o':Math.min(.40,.06+h.v/35)}}><b>${h.d}</b><p style=${{margin:'8px 0 0',fontSize:20,fontWeight:900}}>${h.v}</p><small>activity</small></div>`)}</div></div></div></div>`:null}
-    ${tab==='command'?html`<div><div class="pt-kpis"><${PTKpi} label="Projects" value=${k.projects||p.length} sub="active portfolio" icon="📁"/><${PTKpi} label="Active Tasks" value=${k.active_tasks||active.length} sub={(k.completed_tasks||done.length)+' completed'} icon="⚡" tone="purple"/><${PTKpi} label="Blocked" value=${k.blocked_tasks||blocked.length} sub="needs unblock" icon="🚧" tone="red"/><${PTKpi} label="Due Soon" value=${k.due_soon_tasks||0} sub={(k.overdue_tasks||0)+' overdue'} icon="⏳" tone="amber"/><${PTKpi} label="Tickets" value=${k.open_tickets||0} sub="open / unresolved" icon="🎫" tone="green"/></div><div class="pt-grid"><div class="pt-card"><div class="pt-card-head"><h3>Portfolio delivery map</h3><span class="pt-chip">Progress vs risk</span></div><div class="pt-list">${proj.map(pr=>html`<div class="pt-row" onClick=${()=>onNav&&onNav('projects')}><div><b style=${{fontSize:12}}>${pr.name}</b><div class="pt-bar" style=${{marginTop:7}}><i style=${{width:(pr.progress||0)+'%'}}></i></div><small style=${{color:'var(--tx3)'}}>Tasks ${pr.done}/${pr.tasks} · blocked ${pr.blocked}</small></div><b>${pr.progress||0}%</b><span class=${'pt-status '+(pr.status==='At Risk'?'risk':pr.status==='Watch'?'watch':'ok')}>${pr.status}</span></div>`)}</div></div><div class="pt-card"><div class="pt-card-head"><h3>AI investigation notes</h3><span class="pt-chip">Generated</span></div><div class="pt-list">${insights.map(x=>html`<div class="pt-insight"><span class="pt-dot" style=${{background:x.type==='risk'||x.type==='blocker'?'#dc2626':x.type==='deadline'?'#d97706':'#2563eb'}}></span><div><b>${x.title}</b><p>${x.detail}</p></div></div>`)}</div></div></div></div>`:null}
-    ${tab==='analytics'?html`<div><div class="pt-grid"><div class="pt-card"><div class="pt-card-head"><h3>Throughput and capacity</h3><span class="pt-chip">14 days</span></div>${RC&&RC.ResponsiveContainer?html`<${RC.ResponsiveContainer} width="100%" height=${250}><${RC.LineChart} data=${throughput} margin=${{top:10,right:10,left:-20,bottom:0}}><${RC.CartesianGrid} strokeDasharray="3 3" opacity=${0.25}/><${RC.XAxis} dataKey="day" fontSize=${10}/><${RC.YAxis} fontSize=${10}/><${RC.Tooltip}/><${RC.Line} type="monotone" dataKey="created" stroke="#2563eb" strokeWidth=${2} dot=${false}/><${RC.Line} type="monotone" dataKey="completed" stroke="#16a34a" strokeWidth=${2} dot=${false}/><${RC.Line} type="monotone" dataKey="hours" stroke="#7c3aed" strokeWidth=${2} dot=${false}/></${RC.LineChart}></${RC.ResponsiveContainer}>`:html`<div class="pt-empty-mini">Charts unavailable.</div>`}</div><div class="pt-card"><div class="pt-card-head"><h3>Workload matrix</h3><span class="pt-chip">Capacity</span></div><div class="pt-list">${workload.map(w=>html`<div class="pt-work"><div><div style=${{display:'flex',justifyContent:'space-between'}}><b>${w.name}</b><small>${w.role||''}</small></div><div class="pt-bar" style=${{marginTop:6}}><i style=${{width:Math.min(100,(w.active||0)*10)+'%',background:w.color}}></i></div><small>${w.active} active · ${w.blocked} blocked · ${w.critical} critical</small></div><b>${w.active}</b></div>`)}</div></div></div><div class="pt-grid"><div class="pt-card"><div class="pt-card-head"><h3>Stage distribution</h3><span class="pt-chip">Kanban</span></div>${RC&&RC.ResponsiveContainer?html`<${RC.ResponsiveContainer} width="100%" height=${230}><${RC.BarChart} data=${stageData}><${RC.XAxis} dataKey="name" fontSize=${10}/><${RC.YAxis} fontSize=${10}/><${RC.Tooltip}/><${RC.Bar} dataKey="value" fill="#2563eb" radius=${[8,8,0,0]}/></${RC.BarChart}></${RC.ResponsiveContainer}>`:null}</div><div class="pt-card"><div class="pt-card-head"><h3>Priority pressure</h3><span class="pt-chip">Risk radar</span></div>${RC&&RC.ResponsiveContainer?html`<${RC.ResponsiveContainer} width="100%" height=${230}><${RC.RadarChart} data=${priData}><${RC.PolarGrid}/><${RC.PolarAngleAxis} dataKey="name" fontSize=${10}/><${RC.PolarRadiusAxis} fontSize=${10}/><${RC.Radar} dataKey="value" stroke="#7c3aed" fill="#7c3aed" fillOpacity=${0.25}/><${RC.Tooltip}/></${RC.RadarChart}></${RC.ResponsiveContainer}>`:null}</div></div></div>`:null}
-    ${tab==='timeline'?html`<div class="pt-grid"><div class="pt-card"><div class="pt-card-head"><h3>Gantt timeline</h3><span class="pt-chip">Roadmap</span></div><div class="pt-timeline">${roadmap.map(r=>html`<div class="pt-rowline"><b style=${{fontSize:12}}>${r.name}</b><div class="pt-track"><span class="pt-lane" style=${{'--l':r.start+'%','--w':Math.max(8,r.end-r.start)+'%'}}></span></div></div>`)}</div></div><div class="pt-card"><div class="pt-card-head"><h3>Dependencies & critical path</h3><span class="pt-chip">Planner</span></div>${proj.slice(0,5).map(r=>html`<div class="pt-dep"><span class="pt-node">${r.name}</span><span class="pt-arrow"></span><span class=${'pt-status '+(r.status==='At Risk'?'risk':r.status==='Watch'?'watch':'ok')}>${r.status}</span></div>`)}<div class="pt-list" style=${{marginTop:12}}><div class="pt-insight"><span class="pt-dot" style=${{background:'#7c3aed'}}></span><div><b>Sprint planning layer</b><p>Backlog, WIP limits, milestone and release readiness views are surfaced without removing existing pages.</p></div></div><div class="pt-insight"><span class="pt-dot" style=${{background:'#d97706'}}></span><div><b>Critical path detection</b><p>Blocked and overdue tasks drive watch/risk indicators.</p></div></div></div></div></div>`:null}
-    ${tab==='ai'?html`<div class="pt-grid3"><div class="pt-card"><div class="pt-card-head"><h3>AI weekly status report</h3><span class="pt-chip">Draft</span></div><p style=${{color:'var(--tx2)',fontSize:12}}>Portfolio health ${health}/100. ${blocked.length} blocker(s), ${active.length} active task(s), ${done.length} completed task(s). Recommended next step: unblock priority items and confirm owners for due-soon work.</p><button class="pt-action" onClick=${()=>setToast({title:'Status report ready',body:'Draft content is ready to paste into email/Slack.'})}>Generate report</button></div><div class="pt-card"><div class="pt-card-head"><h3>AI risk prediction</h3><span class="pt-chip">Smart</span></div><div class="pt-list">${insights.map(x=>html`<div class="pt-insight"><span class="pt-dot" style=${{background:'#2563eb'}}></span><div><b>${x.title}</b><p>${x.detail}</p></div></div>`)}</div></div><div class="pt-card"><div class="pt-card-head"><h3>Automation backlog</h3><span class="pt-chip">Next</span></div><div class="pt-list"><div class="pt-insight"><span class="pt-dot" style=${{background:'#16a34a'}}></span><div><b>Meeting notes → tasks</b><p>Paste notes in AI Docs and convert action items into tasks.</p></div></div><div class="pt-insight"><span class="pt-dot" style=${{background:'#7c3aed'}}></span><div><b>RCA generator</b><p>Create incident summary, root cause, timeline and preventive actions.</p></div></div><div class="pt-insight"><span class="pt-dot" style=${{background:'#d97706'}}></span><div><b>Workload balancer</b><p>Suggest reassignment when one member crosses capacity.</p></div></div></div></div></div>`:null}
-  </div>`;
-}
-
-
-/* ═════════════════════════════════════════════════════════════════════════════
-   V12.6 TRUE ENTERPRISE DASHBOARD OVERRIDE
-   This replaces the visual dashboard with a clearly visible tabbed command center
-   and surfaces every requested module as UI, not hidden notes.
-   ═════════════════════════════════════════════════════════════════════════════ */
-function Dashboard({cu,tasks,projects,users,onNav,activeTeam,teams,setTeamCtx}){
-  const t=safe(tasks), p=safe(projects), u=safe(users);
-  const [tab,setTab]=useState('ops');
-  const [cmd,setCmd]=useState(false);
-  const [toast,setToast]=useState(null);
-  const [cc,setCc]=useState(null);
-  const [loading,setLoading]=useState(false);
-  useEffect(()=>{let dead=false; setLoading(true); api.get('/api/command-center'+(activeTeam?'?team_id='+activeTeam.id:'')).then(d=>{if(!dead && d && !d.error)setCc(d)}).catch(()=>{}).finally(()=>!dead&&setLoading(false)); return()=>{dead=true};},[activeTeam&&activeTeam.id,t.length,p.length]);
-  useEffect(()=>{const h=e=>{if((e.ctrlKey||e.metaKey)&&String(e.key).toLowerCase()==='k'){e.preventDefault();setCmd(true)} if(e.key==='Escape')setCmd(false)};window.addEventListener('keydown',h);return()=>window.removeEventListener('keydown',h);},[]);
-  const active=t.filter(x=>!['done','completed'].includes(String(x.stage||x.status||'').toLowerCase()));
-  const done=t.filter(x=>['done','completed'].includes(String(x.stage||x.status||'').toLowerCase()));
-  const blocked=t.filter(x=>String(x.stage||x.status||'').toLowerCase().includes('block')||String(x.priority||'').toLowerCase()==='critical');
-  const overdue=t.filter(x=>x.due_date && new Date(x.due_date)<new Date() && !['done','completed'].includes(String(x.stage||x.status||'').toLowerCase()));
-  const health=Math.max(10,Math.min(100,Math.round(100-(blocked.length*9)-(overdue.length*7)+(done.length*2))));
-  const k=cc&&cc.kpis?cc.kpis:{};
-  const proj=(cc&&cc.project_health&&cc.project_health.length?cc.project_health:p.slice(0,5).map((x,i)=>({name:x.name||x.title||('Project '+(i+1)),progress:x.progress||0,tasks:t.filter(a=>a.project_id===x.id).length,done:0,blocked:0,status:(blocked.length?'Watch':'Healthy')}))).concat(p.length?[]:[{name:'Digital transformation rollout',progress:74,tasks:18,done:13,blocked:1,status:'Watch'},{name:'API security hardening',progress:51,tasks:14,done:6,blocked:2,status:'At Risk'},{name:'Mobile release stabilization',progress:89,tasks:24,done:21,blocked:0,status:'Healthy'}]).slice(0,5);
-  const stageData=(cc&&cc.stage_distribution&&cc.stage_distribution.length?cc.stage_distribution:[{name:'Planning',value:3},{name:'Development',value:5},{name:'Testing',value:2},{name:'Blocked',value:blocked.length||1},{name:'Completed',value:done.length||4}]).map(x=>({name:(STAGES[x.name]&&STAGES[x.name].label)||x.name,value:x.value}));
-  const priData=(cc&&cc.priority_distribution&&cc.priority_distribution.length?cc.priority_distribution:[{name:'Critical',value:blocked.length||1},{name:'High',value:3},{name:'Medium',value:6},{name:'Low',value:2}]).map(x=>({name:(PRIS[x.name]&&PRIS[x.name].label)||x.name,value:x.value}));
-  const throughput=(cc&&cc.throughput&&cc.throughput.length?cc.throughput:[{day:'Mon',created:2,completed:1,hours:4},{day:'Tue',created:3,completed:2,hours:6},{day:'Wed',created:1,completed:3,hours:5},{day:'Thu',created:4,completed:2,hours:7},{day:'Fri',created:2,completed:4,hours:3}]);
-  const workload=(cc&&cc.workload&&cc.workload.length?cc.workload:u.slice(0,5).map((x,i)=>({name:x.name||x.email||('Member '+(i+1)),role:x.role||'Member',active:active.filter(a=>a.assignee_id===x.id).length||i+2,blocked:i%2,critical:i===0?1:0,color:['#2563eb','#7c3aed','#16a34a','#f59e0b','#ef4444'][i%5]}))).concat(u.length?[]:[{name:'Prasanna',role:'Admin',active:4,blocked:1,critical:1,color:'#2563eb'},{name:'Developer Team',role:'Engineering',active:7,blocked:2,critical:1,color:'#7c3aed'},{name:'QA Team',role:'Testing',active:3,blocked:0,critical:0,color:'#16a34a'}]).slice(0,6);
-  const todayFocus=[blocked[0],overdue[0],active[0]].filter(Boolean); if(!todayFocus.length)todayFocus.push({title:'Create first sprint plan',priority:'High'},{title:'Review portfolio risks',priority:'Medium'},{title:'Update weekly status summary',priority:'Low'});
-  const featureGroups={
-    pm:[['Gantt chart','Visible roadmap/Gantt shell with progress lanes'],['Sprint planning','Sprint capacity and WIP planning panel'],['Backlog grooming','Priority grooming and estimation cards'],['Dependency tracking','Dependency map and critical-path risk shell'],['Baseline vs actual','Variance cards and milestone tracking'],['Release checklist','Go/No-Go readiness checklist'],['Approval workflow','Approval control panel per task/project']],
-    ai:[['AI health summary','Portfolio status generated from live workspace metrics'],['What changed today','Daily delta summary from tasks/tickets/time'],['Risk prediction','Slip-risk signals based on blockers and overdue work'],['Requirements to tasks','Generator shell for requirements breakdown'],['Meeting notes to tasks','Action extractor workflow'],['Sprint summary','Review/retro summary panel'],['Status mail','Weekly status mail generator'],['RCA for blockers','Root-cause panel for blocked tasks'],['Workload balancing','AI reassignment suggestion panel']],
-    collab:[['@mentions','Mention-ready comment model'],['Threaded comments','Task activity thread shell'],['Rich text editor','Formatted update area'],['File preview','Attachment preview section'],['Voice notes','Voice attachment placeholder'],['Realtime updates','SSE hooks available'],['Read receipts','Read-state design panel'],['Notification preferences','User preference panel'],['Team availability','Availability calendar shell'],['Daily standup','Yesterday/Today/Blockers board']],
-    security:[['Production CORS','Replace open fallback with explicit origins'],['CSRF protection','Token middleware required for session POST APIs'],['Backend RBAC','Move permissions from localStorage to backend policy'],['Audit explorer','Filter/export audit logs'],['Device trust','IP/session/device scoring panel'],['Workspace policy','Password, retention and SSO policies'],['Data retention','Retention controls panel'],['Impersonation audit','Admin impersonation needs reason + audit trail']],
-    architecture:[['Flask blueprints','Split auth/projects/tasks/billing/admin/AI/webhooks'],['Frontend modules','Split frontend into components/pages/services'],['Alembic migrations','Version controlled schema changes'],['Workers + Redis','Async reminders/webhooks/AI jobs'],['Structured errors','Standard API error envelope'],['Automated tests','Regression test setup'],['OpenAPI docs','Swagger contract plan'],['Observability','Request IDs, latency metrics, Sentry hooks'],['Performance','Lazy pages, indexes, cache, compression']]
-  };
-  const navs=[['ops','Workspace Ops'],['command','Executive Command'],['analytics','Analytics'],['gantt','Gantt / Roadmap'],['pm','PM Power Tools'],['ai','AI Copilot'],['collab','Collaboration'],['security','Admin & Security'],['matrix','Feature Matrix']];
-  const go=v=>{ if(onNav) onNav(v); };
-  const Kpi=({label,value,sub,icon,tone,onClick})=>html`<button class=${'vx-kpi '+(tone||'blue')} onClick=${onClick||(()=>{})}><i>${icon}</i><span>${label}</span><b>${value}</b><small>${sub}</small></button>`;
-  const Card=({title,chip,children})=>html`<section class="vx-card"><div class="vx-head"><h3>${title}</h3>${chip?html`<em>${chip}</em>`:null}</div>${children}</section>`;
-  const Item=({a,b,c,status})=>html`<div class="vx-row"><div><b>${a}</b><small>${b}</small></div>${c?html`<strong>${c}</strong>`:null}${status?html`<span class=${'vx-status '+String(status).toLowerCase().replace(/\s+/g,'-')}>${status}</span>`:null}</div>`;
-  const FeatureGrid=({items})=>html`<div class="vx-feature-grid">${items.map(x=>html`<div class="vx-feature"><b>${x[0]}</b><p>${x[1]}</p><span>Visible</span></div>`)}</div>`;
-  return html`<div class="vx-shell">
-    <style>${`
-      @keyframes vxIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}@keyframes vxPulse{0%,100%{opacity:.55;transform:scale(1)}50%{opacity:1;transform:scale(1.06)}}@keyframes vxShimmer{0%{background-position:220% 0}100%{background-position:-220% 0}}
-      .vx-shell{min-height:100%;overflow:auto;padding:22px;background:#f5f7fb;color:#0f172a;transition:.22s}.dark .vx-shell,body.dark .vx-shell,[data-theme="dark"] .vx-shell{background:radial-gradient(circle at 0 0,rgba(37,99,235,.18),transparent 28%),radial-gradient(circle at 100% 0,rgba(147,51,234,.16),transparent 30%),#070b16;color:#e5e7eb}.vx-shell *{box-sizing:border-box}.vx-hero{display:grid;grid-template-columns:minmax(0,1.35fr) 360px;gap:18px;padding:24px;border-radius:30px;border:1px solid rgba(148,163,184,.28);background:linear-gradient(135deg,#ffffff,#eef4ff);box-shadow:0 24px 80px rgba(15,23,42,.12);animation:vxIn .25s ease both}.dark .vx-hero,body.dark .vx-hero,[data-theme="dark"] .vx-hero{background:linear-gradient(135deg,#111827,#0f172a);border-color:rgba(148,163,184,.22);box-shadow:0 24px 80px rgba(0,0,0,.33)}.vx-badge{display:inline-flex;align-items:center;gap:7px;padding:6px 11px;border-radius:999px;background:#dbeafe;color:#1d4ed8;font-size:11px;font-weight:950;letter-spacing:.05em;text-transform:uppercase}.dark .vx-badge,body.dark .vx-badge,[data-theme="dark"] .vx-badge{background:rgba(96,165,250,.18);color:#93c5fd}.vx-hero h1{margin:12px 0 8px;font-size:31px;line-height:1.05;letter-spacing:-.05em;color:#0f172a}.dark .vx-hero h1,body.dark .vx-hero h1,[data-theme="dark"] .vx-hero h1{color:#f8fafc}.vx-hero p{margin:0;color:#475569;font-size:13px;max-width:760px}.dark .vx-hero p,body.dark .vx-hero p,[data-theme="dark"] .vx-hero p{color:#cbd5e1}.vx-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.vx-btn{border:1px solid rgba(148,163,184,.35);background:#fff;color:#0f172a;padding:10px 13px;border-radius:14px;font-weight:900;font-size:12px;cursor:pointer;transition:.18s}.dark .vx-btn,body.dark .vx-btn,[data-theme="dark"] .vx-btn{background:#111827;color:#e5e7eb;border-color:rgba(148,163,184,.25)}.vx-btn:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(37,99,235,.18)}.vx-btn.primary{background:#2563eb;color:white;border-color:#2563eb}.vx-health{position:relative;overflow:hidden;border-radius:24px;padding:18px;background:linear-gradient(135deg,#061529,#0f172a);color:white}.vx-health:before{content:'';position:absolute;right:-42px;top:-42px;width:150px;height:150px;border-radius:999px;background:rgba(96,165,250,.22);animation:vxPulse 3s infinite}.vx-health small{color:rgba(255,255,255,.70);font-weight:900}.vx-score{font-size:56px;font-weight:1000;letter-spacing:-.08em}.vx-meter{height:10px;background:rgba(255,255,255,.13);border-radius:999px;overflow:hidden}.vx-meter i{display:block;height:100%;width:var(--w);border-radius:999px;background:linear-gradient(90deg,#22c55e,#06b6d4,#818cf8)}.vx-tabs{position:sticky;top:0;z-index:10;display:flex;gap:8px;flex-wrap:wrap;margin:18px 0;padding:10px;border-radius:20px;border:1px solid rgba(148,163,184,.28);background:rgba(255,255,255,.82);backdrop-filter:blur(18px)}.dark .vx-tabs,body.dark .vx-tabs,[data-theme="dark"] .vx-tabs{background:rgba(15,23,42,.78);border-color:rgba(148,163,184,.20)}.vx-tab{border:0;background:transparent;color:#475569;padding:10px 13px;border-radius:14px;font-weight:950;font-size:12px;cursor:pointer}.dark .vx-tab,body.dark .vx-tab,[data-theme="dark"] .vx-tab{color:#cbd5e1}.vx-tab.active{background:#2563eb;color:white;box-shadow:0 10px 28px rgba(37,99,235,.28)}.vx-kpis{display:grid;grid-template-columns:repeat(5,minmax(140px,1fr));gap:14px}.vx-kpi,.vx-card,.vx-feature{background:#fff;border:1px solid rgba(148,163,184,.28);border-radius:22px;box-shadow:0 14px 40px rgba(15,23,42,.07);animation:vxIn .32s ease both}.dark .vx-kpi,.dark .vx-card,.dark .vx-feature,body.dark .vx-kpi,body.dark .vx-card,body.dark .vx-feature,[data-theme="dark"] .vx-kpi,[data-theme="dark"] .vx-card,[data-theme="dark"] .vx-feature{background:#111827;border-color:rgba(148,163,184,.20);box-shadow:0 14px 40px rgba(0,0,0,.24)}.vx-kpi{position:relative;overflow:hidden;text-align:left;padding:16px;min-height:124px;cursor:pointer}.vx-kpi:after{content:'';position:absolute;right:-32px;top:-32px;width:100px;height:100px;border-radius:999px;background:rgba(37,99,235,.15)}.vx-kpi.red:after{background:rgba(239,68,68,.17)}.vx-kpi.amber:after{background:rgba(245,158,11,.18)}.vx-kpi.green:after{background:rgba(34,197,94,.17)}.vx-kpi.purple:after{background:rgba(124,58,237,.17)}.vx-kpi i{font-style:normal;font-size:19px}.vx-kpi span{display:block;margin-top:8px;color:#64748b;font-size:10px;font-weight:950;letter-spacing:.08em;text-transform:uppercase}.dark .vx-kpi span,body.dark .vx-kpi span,[data-theme="dark"] .vx-kpi span{color:#94a3b8}.vx-kpi b{display:block;font-size:31px;letter-spacing:-.05em}.vx-kpi small{color:#64748b}.dark .vx-kpi small,body.dark .vx-kpi small,[data-theme="dark"] .vx-kpi small{color:#94a3b8}.vx-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}.vx-grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:14px}.vx-card{padding:16px}.vx-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:13px}.vx-head h3{margin:0;font-size:14px;color:#0f172a}.dark .vx-head h3,body.dark .vx-head h3,[data-theme="dark"] .vx-head h3{color:#f8fafc}.vx-head em{font-style:normal;padding:5px 9px;border-radius:999px;background:#eef2ff;color:#4338ca;font-size:10px;font-weight:900}.dark .vx-head em,body.dark .vx-head em,[data-theme="dark"] .vx-head em{background:rgba(99,102,241,.17);color:#c4b5fd}.vx-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:11px;border:1px solid rgba(148,163,184,.22);border-radius:16px;background:rgba(148,163,184,.07);margin-bottom:9px}.vx-row small,.vx-feature p{display:block;margin-top:4px;color:#64748b;font-size:11px}.dark .vx-row small,.dark .vx-feature p,body.dark .vx-row small,body.dark .vx-feature p,[data-theme="dark"] .vx-row small,[data-theme="dark"] .vx-feature p{color:#94a3b8}.vx-status{padding:5px 8px;border-radius:999px;font-size:10px;font-weight:950;background:#dcfce7;color:#15803d}.vx-status.watch{background:#fef3c7;color:#b45309}.vx-status.at-risk{background:#fee2e2;color:#dc2626}.vx-bar{height:9px;background:rgba(148,163,184,.22);border-radius:999px;overflow:hidden;margin-top:7px}.vx-bar i{display:block;height:100%;width:var(--w);background:linear-gradient(90deg,#2563eb,#06b6d4);border-radius:999px}.vx-insight{display:flex;gap:10px;border:1px solid rgba(148,163,184,.24);border-radius:16px;padding:12px;background:rgba(37,99,235,.06);margin-bottom:10px}.vx-dot{width:9px;height:9px;border-radius:999px;background:#2563eb;margin-top:4px}.vx-insight p{margin:3px 0 0;color:#64748b;font-size:12px}.dark .vx-insight p,body.dark .vx-insight p,[data-theme="dark"] .vx-insight p{color:#cbd5e1}.vx-heat{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}.vx-heat div{min-height:88px;border-radius:16px;border:1px solid rgba(37,99,235,.18);background:rgba(37,99,235,var(--o));padding:10px}.vx-road{display:grid;grid-template-columns:160px minmax(0,1fr) 44px;gap:10px;align-items:center;margin-bottom:12px}.vx-track{height:28px;border-radius:999px;background:rgba(148,163,184,.18);position:relative;overflow:hidden}.vx-lane{position:absolute;left:var(--l);top:5px;height:18px;width:var(--w);border-radius:999px;background:linear-gradient(90deg,#2563eb,#7c3aed);box-shadow:0 8px 20px rgba(37,99,235,.24)}.vx-feature-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.vx-feature{padding:14px}.vx-feature span{display:inline-flex;margin-top:10px;font-size:10px;font-weight:950;border-radius:999px;background:#dcfce7;color:#15803d;padding:4px 8px}.vx-empty{padding:18px;border-radius:16px;border:1px dashed rgba(148,163,184,.35);text-align:center;color:#64748b}.vx-cmd{position:fixed;inset:0;z-index:99999;background:rgba(15,23,42,.42);backdrop-filter:blur(8px);display:flex;align-items:flex-start;justify-content:center;padding-top:9vh}.vx-cmd-box{width:min(680px,calc(100vw - 32px));background:#fff;color:#0f172a;border-radius:24px;border:1px solid rgba(148,163,184,.3);box-shadow:0 30px 100px rgba(0,0,0,.3);overflow:hidden}.dark .vx-cmd-box,body.dark .vx-cmd-box,[data-theme="dark"] .vx-cmd-box{background:#111827;color:#e5e7eb}.vx-cmd-head{display:flex;gap:10px;align-items:center;padding:14px;border-bottom:1px solid rgba(148,163,184,.24)}.vx-cmd-head input{flex:1;border:0;outline:0;background:transparent;color:inherit;font-size:15px}.vx-cmd-list{padding:9px}.vx-cmd-list button{width:100%;display:flex;justify-content:space-between;border:0;background:transparent;color:inherit;border-radius:14px;padding:12px;cursor:pointer}.vx-cmd-list button:hover{background:rgba(37,99,235,.08)}.vx-toast{position:fixed;right:22px;bottom:22px;z-index:99998;background:#0f172a;color:white;border-radius:16px;padding:13px 15px;box-shadow:0 18px 55px rgba(0,0,0,.28)}.vx-toast small{display:block;color:#cbd5e1;margin-top:3px}@media(max-width:1100px){.vx-hero,.vx-grid{grid-template-columns:1fr}.vx-kpis,.vx-grid3,.vx-feature-grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:650px){.vx-shell{padding:12px}.vx-kpis,.vx-grid3,.vx-feature-grid{grid-template-columns:1fr}.vx-hero h1{font-size:24px}.vx-road{grid-template-columns:1fr}.vx-hero{grid-template-columns:1fr}}
-    `}</style>
-    ${toast?html`<div class="vx-toast"><b>${toast.title}</b><small>${toast.body}</small></div>`:null}
-    ${cmd?html`<div class="vx-cmd" onClick=${()=>setCmd(false)}><div class="vx-cmd-box" onClick=${e=>e.stopPropagation()}><div class="vx-cmd-head"><b>⌘K</b><input autoFocus placeholder="Search projects, tasks, tickets, AI, settings..."/><button class="vx-btn" onClick=${()=>setCmd(false)}>Esc</button></div><div class="vx-cmd-list">${[['Dashboard','dashboard'],['Projects','projects'],['Kanban Board','tasks'],['Tickets','tickets'],['AI Docs','ai-docs'],['Timeline Tracker','timeline'],['Timesheet','timesheet'],['Settings','settings']].map(x=>html`<button onClick=${()=>{setCmd(false);go(x[1])}}><b>${x[0]}</b><small>Open ${x[0]}</small></button>`)}</div></div></div>`:null}
-    <section class="vx-hero"><div><span class="vx-badge">🚀 V12.7 visible enterprise upgrade</span><h1>Good day, ${(cu&&cu.name||'there').split(' ')[0]} — your new dashboard is active.</h1><p>This version visibly includes the old operational dashboard plus Executive Command, Analytics, Gantt/Roadmap, PM Power Tools, AI Copilot, Collaboration, Admin/Security and Feature Matrix tabs. Dark and light theme styling is handled separately.</p><div class="vx-actions"><button class="vx-btn primary" onClick=${()=>setCmd(true)}>⌘K Command</button><button class="vx-btn" onClick=${()=>setTab('gantt')}>📅 Gantt / Roadmap</button><button class="vx-btn" onClick=${()=>setTab('ai')}>🤖 AI Copilot</button><button class="vx-btn" onClick=${()=>setTab('matrix')}>✅ Feature Matrix</button></div></div><div class="vx-health"><small>Portfolio health</small><div class="vx-score">${health}</div><div class="vx-meter" style=${{'--w':health+'%'}}><i></i></div><div style=${{display:'flex',justifyContent:'space-between',fontSize:11,marginTop:9,color:'rgba(255,255,255,.72)'}}><span>${blocked.length} blockers</span><span>${loading?'Refreshing':'Live'}</span></div></div></section>
-    <nav class="vx-tabs">${navs.map(n=>html`<button class=${'vx-tab '+(tab===n[0]?'active':'')} onClick=${()=>setTab(n[0])}>${n[1]}</button>`)}</nav>
-    ${tab==='ops'?html`<section><div class="vx-kpis"><${Kpi} label="Projects" value=${k.projects||p.length} sub="active portfolio" icon="📁" onClick=${()=>go('projects')}/><${Kpi} label="Active Tasks" value=${k.active_tasks||active.length} sub="in progress" icon="⚡" tone="purple" onClick=${()=>go('tasks')}/><${Kpi} label="Completed" value=${k.completed_tasks||done.length} sub="delivered" icon="✅" tone="green"/><${Kpi} label="Blocked" value=${k.blocked_tasks||blocked.length} sub="needs unblock" icon="🚧" tone="red"/><${Kpi} label="Due Soon" value=${k.due_soon_tasks||overdue.length} sub="SLA watch" icon="⏳" tone="amber"/></div><div class="vx-grid"><${Card} title="Today’s Focus — AI prioritized" chip="Live">${todayFocus.map((x,i)=>html`<${Item} a=${x.title||x.name||('Focus item '+(i+1))} b=${x.priority||'Priority'} c=${i+1} status=${i===0?'Watch':'Healthy'}/>`)}<button class="vx-btn primary" onClick=${()=>setToast({title:'Today Focus',body:'AI focus list uses blockers, overdue items and priorities.'})}>Generate focus plan</button></${Card}><${Card} title="Old dashboard functions preserved" chip="Ops">${[['My Tasks','Still available from Kanban and task widgets'],['Reminders','Header reminder pill remains active'],['Timesheet','Hours and productivity pages remain as-is'],['Tickets','Ticket page and quick ticket flow remain active'],['Notifications / DM','Existing polling remains active']].map(x=>html`<${Item} a=${x[0]} b=${x[1]} status="Healthy"/>`)}</${Card}></div></section>`:null}
-    ${tab==='command'?html`<section><div class="vx-kpis"><${Kpi} label="Portfolio Health" value=${health} sub="animated score" icon="❤️"/><${Kpi} label="SLA Breach Trend" value=${overdue.length} sub="overdue / due soon" icon="📉" tone="red"/><${Kpi} label="Burn-up Done" value=${done.length} sub="completed work" icon="📈" tone="green"/><${Kpi} label="Risk Radar" value=${blocked.length} sub="blocked / critical" icon="🛰️" tone="amber"/><${Kpi} label="AI Actions" value="9" sub="copilot workflows" icon="✨" tone="purple"/></div><div class="vx-grid"><${Card} title="Portfolio delivery map" chip="Drill-down">${proj.map(pr=>html`<div class="vx-row"><div><b>${pr.name}</b><div class="vx-bar"><i style=${{'--w':(pr.progress||0)+'%'}}></i></div><small>${pr.done||0}/${pr.tasks||0} tasks · ${pr.blocked||0} blockers</small></div><strong>${pr.progress||0}%</strong><span class=${'vx-status '+String(pr.status||'Healthy').toLowerCase().replace(/\s+/g,'-')}>${pr.status||'Healthy'}</span></div>`)}</${Card}><${Card} title="AI investigation notes" chip="Generated"><div class="vx-insight"><span class="vx-dot"></span><div><b>Portfolio health summary</b><p>${health>=80?'Portfolio is healthy. Keep monitoring blockers and due-soon work.':'Portfolio needs attention. Blockers and overdue work are reducing confidence.'}</p></div></div><div class="vx-insight"><span class="vx-dot" style=${{background:'#f59e0b'}}></span><div><b>What changed today?</b><p>${active.length} active tasks, ${blocked.length} blockers and ${done.length} completed items are included in this view.</p></div></div><div class="vx-insight"><span class="vx-dot" style=${{background:'#7c3aed'}}></span><div><b>Workload balancing</b><p>Reassign blocked or critical work from overloaded owners shown in workload matrix.</p></div></div></${Card}></div></section>`:null}
-    ${tab==='analytics'?html`<section><div class="vx-grid"><${Card} title="Throughput / burn-up / burn-down" chip="Recharts">${RC&&RC.ResponsiveContainer?html`<${RC.ResponsiveContainer} width="100%" height=${260}><${RC.LineChart} data=${throughput}><${RC.CartesianGrid} strokeDasharray="3 3" opacity=${0.25}/><${RC.XAxis} dataKey="day" fontSize=${10}/><${RC.YAxis} fontSize=${10}/><${RC.Tooltip}/><${RC.Line} type="monotone" dataKey="created" stroke="#2563eb" strokeWidth=${3}/><${RC.Line} type="monotone" dataKey="completed" stroke="#16a34a" strokeWidth=${3}/><${RC.Line} type="monotone" dataKey="hours" stroke="#7c3aed" strokeWidth=${3}/></${RC.LineChart}></${RC.ResponsiveContainer}>`:html`<div class="vx-empty">Charts loading...</div>`}</${Card}><${Card} title="Team workload matrix" chip="Capacity">${workload.map(w=>html`<div class="vx-insight"><span class="vx-dot" style=${{background:w.color}}></span><div style=${{width:'100%'}}><div style=${{display:'flex',justifyContent:'space-between'}}><b>${w.name}</b><small>${w.role}</small></div><div class="vx-bar"><i style=${{'--w':Math.min(100,(w.active||0)*12)+'%',background:w.color}}></i></div><p>${w.active} active · ${w.blocked} blocked · ${w.critical} critical</p></div></div>`)}</${Card}></div><div class="vx-grid"><${Card} title="Stage distribution" chip="Kanban">${RC&&RC.ResponsiveContainer?html`<${RC.ResponsiveContainer} width="100%" height=${250}><${RC.BarChart} data=${stageData}><${RC.XAxis} dataKey="name" fontSize=${10}/><${RC.YAxis} fontSize=${10}/><${RC.Tooltip}/><${RC.Bar} dataKey="value" fill="#2563eb" radius=${[8,8,0,0]}/></${RC.BarChart}></${RC.ResponsiveContainer}>`:null}</${Card}><${Card} title="Priority pressure / risk radar" chip="Radar">${RC&&RC.ResponsiveContainer?html`<${RC.ResponsiveContainer} width="100%" height=${250}><${RC.RadarChart} data=${priData}><${RC.PolarGrid}/><${RC.PolarAngleAxis} dataKey="name" fontSize=${10}/><${RC.PolarRadiusAxis} fontSize=${10}/><${RC.Radar} dataKey="value" stroke="#7c3aed" fill="#7c3aed" fillOpacity=${0.28}/><${RC.Tooltip}/></${RC.RadarChart}></${RC.ResponsiveContainer}>`:null}</${Card}></div></section>`:null}
-    ${tab==='gantt'?html`<section><div class="vx-grid"><${Card} title="Timeline / Gantt view with drag-ready lanes" chip="Roadmap">${proj.map((r,i)=>html`<div class="vx-road"><b>${r.name}</b><div class="vx-track"><span class="vx-lane" style=${{'--l':(4+i*10)+'%','--w':Math.max(12,22+(r.progress||0)/4)+'%'}}></span></div><small>${r.progress||0}%</small></div>`)}</${Card}><${Card} title="Project dependency map / critical path" chip="Dependencies">${proj.map((r,i)=>html`<${Item} a={(i+1)+'. '+r.name} b="Dependency and milestone tracking shell" status=${r.status||'Healthy'}/>`)}<div class="vx-insight"><span class="vx-dot" style=${{background:'#dc2626'}}></span><div><b>Critical path detection</b><p>Blocked and overdue tasks are marked as critical-path risks until the full dependency schema is enabled.</p></div></div></${Card}></div></section>`:null}
-    ${tab==='pm'?html`<section><${FeatureGrid} items=${featureGroups.pm}/></section>`:null}
-    ${tab==='ai'?html`<section><${FeatureGrid} items=${featureGroups.ai}/></section>`:null}
-    ${tab==='collab'?html`<section><${FeatureGrid} items=${featureGroups.collab}/></section>`:null}
-    ${tab==='security'?html`<section><div class="vx-grid"><${Card} title="Admin / security governance" chip="Controls"><${FeatureGrid} items=${featureGroups.security}/></${Card}><${Card} title="Architecture / performance roadmap" chip="Engineering"><${FeatureGrid} items=${featureGroups.architecture}/></${Card}></div></section>`:null}
-    ${tab==='matrix'?html`<section><${Card} title="Full feature implementation matrix" chip="Transparent status"><p style=${{color:'var(--tx2)',fontSize:13}}>Visible UI has been added for every item you listed. Deep backend items like CSRF middleware, Alembic migrations, Redis workers, backend RBAC and true LLM automation are marked as engineering work because they require schema/service refactoring beyond frontend display.</p></${Card}><div class="vx-grid3">${Object.keys(featureGroups).map(k=>html`<${Card} title=${k.toUpperCase()} chip="Included"><${FeatureGrid} items=${featureGroups[k]}/></${Card}>`)}</div></section>`:null}
-  </div>`;
-}
-
 ReactDOM.createRoot(document.getElementById('root')).render(html`<${ErrorBoundary}><${App}<//>`);
 if(window._vwHideBoot)window._vwHideBoot();
 };
@@ -8137,3 +8051,557 @@ waitForLibs(window._pfStartApp);
     if(dot){ dot.style.background="#34d399"; dot.title="Live — real-time sync active"; }
   });
 })();
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// COMMAND CENTER — Executive AI Dashboard
+// ═══════════════════════════════════════════════════════════════════════════════
+function CommandCenter({cu,tasks,projects,users,onNav,activeTeam}){
+  const t=safe(tasks);const p=safe(projects);const u=safe(users);
+  const [aiHealth,setAiHealth]=useState(null);
+  const [aiLoading,setAiLoading]=useState(false);
+  const [whatChanged,setWhatChanged]=useState(null);
+  const [changedLoading,setChangedLoading]=useState(false);
+  const [statusReport,setStatusReport]=useState('');
+  const [reportLoading,setReportLoading]=useState(false);
+  const [taskInput,setTaskInput]=useState('');
+  const [breakdown,setBreakdown]=useState(null);
+  const [bdLoading,setBdLoading]=useState(false);
+
+  const done=t.filter(x=>x.stage==='completed').length;
+  const active=t.filter(x=>x.stage!=='completed').length;
+  const blocked=t.filter(x=>x.stage==='blocked').length;
+  const overdue=t.filter(x=>x.due&&new Date(x.due)<new Date()&&x.stage!=='completed').length;
+  const critical=t.filter(x=>x.priority==='critical'&&x.stage!=='completed').length;
+  const healthScore=Math.max(0,Math.min(100,Math.round(
+    100 - (blocked/Math.max(t.length,1))*40 - (overdue/Math.max(t.length,1))*35 - (critical/Math.max(t.length,1))*25
+  )));
+  const healthColor=healthScore>=80?'#22c55e':healthScore>=60?'#f59e0b':'#ef4444';
+  const healthLabel=healthScore>=80?'Healthy':healthScore>=60?'At Risk':'Critical';
+
+  async function loadAiHealth(){
+    setAiLoading(true);
+    try{
+      const r=await api.post('/api/ai/project-health',{project_ids:p.map(x=>x.id),task_summary:{total:t.length,done,active,blocked,overdue,critical}});
+      setAiHealth(r.summary||r.error||'No summary available.');
+    }catch(e){setAiHealth('Error loading health summary.');}
+    setAiLoading(false);
+  }
+
+  async function loadWhatChanged(){
+    setChangedLoading(true);
+    try{
+      const r=await api.post('/api/ai/what-changed',{});
+      setWhatChanged(r.summary||r.error||'Nothing to report.');
+    }catch(e){setWhatChanged('Error loading activity summary.');}
+    setChangedLoading(false);
+  }
+
+  async function generateStatusReport(){
+    setReportLoading(true);
+    try{
+      const r=await api.post('/api/ai/status-report',{tasks:t.slice(0,80),projects:p});
+      setStatusReport(r.report||r.error||'');
+    }catch(e){setStatusReport('Error generating report.');}
+    setReportLoading(false);
+  }
+
+  async function breakdownTask(){
+    if(!taskInput.trim())return;
+    setBdLoading(true);
+    try{
+      const r=await api.post('/api/ai/task-breakdown',{requirement:taskInput});
+      setBreakdown(r.tasks||null);
+    }catch(e){setBreakdown(null);}
+    setBdLoading(false);
+  }
+
+  const projectHealth=p.map(proj=>{
+    const pt=t.filter(x=>x.project===proj.id);
+    const pb=pt.filter(x=>x.stage==='blocked').length;
+    const po=pt.filter(x=>x.due&&new Date(x.due)<new Date()&&x.stage!=='completed').length;
+    const pct=pt.length?Math.round(pt.filter(x=>x.stage==='completed').length/pt.length*100):0;
+    const risk=pb>2||po>3?'high':pb>0||po>1?'medium':'low';
+    return{...proj,total:pt.length,blocked:pb,overdue:po,pct,risk};
+  }).sort((a,b)=>({high:0,medium:1,low:2}[a.risk]-{high:0,medium:1,low:2}[b.risk]));
+
+  const RISK_COLORS={high:'#ef4444',medium:'#f59e0b',low:'#22c55e'};
+  const RISK_BG={high:'rgba(239,68,68,0.1)',medium:'rgba(245,158,11,0.1)',low:'rgba(34,197,94,0.1)'};
+
+  const workloadData=u.map(user=>{
+    const myT=t.filter(x=>x.assignee===user.id&&x.stage!=='completed');
+    return{...user,count:myT.length,blocked:myT.filter(x=>x.stage==='blocked').length};
+  }).sort((a,b)=>b.count-a.count).slice(0,10);
+
+  const stageData=[
+    {name:'Backlog',count:t.filter(x=>x.stage==='backlog').length,color:'#64748b'},
+    {name:'In Progress',count:t.filter(x=>x.stage==='in-progress'||x.stage==='inprogress').length,color:'#3b82f6'},
+    {name:'Review',count:t.filter(x=>x.stage==='review').length,color:'#8b5cf6'},
+    {name:'Blocked',count:t.filter(x=>x.stage==='blocked').length,color:'#ef4444'},
+    {name:'Done',count:t.filter(x=>x.stage==='completed').length,color:'#22c55e'},
+  ];
+  const maxStage=Math.max(...stageData.map(x=>x.count),1);
+
+  return html`
+  <div style=${{height:'100%',overflowY:'auto',padding:'16px 20px',display:'flex',flexDirection:'column',gap:16}}>
+    <!-- Header -->
+    <div style=${{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:8}}>
+      <div>
+        <h2 style=${{margin:0,fontSize:18,fontWeight:800,color:'var(--tx)',letterSpacing:'-0.02em'}}>⚡ Command Center</h2>
+        <p style=${{margin:0,fontSize:12,color:'var(--tx3)'}}>Executive portfolio view · ${new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</p>
+      </div>
+      <div style=${{display:'flex',gap:8}}>
+        <button class="btn bg" onClick=${generateStatusReport} disabled=${reportLoading} style=${{fontSize:12}}>
+          ${reportLoading?'Generating…':'📋 Status Report'}
+        </button>
+        <button class="btn bg" onClick=${loadWhatChanged} disabled=${changedLoading} style=${{fontSize:12,background:'rgba(139,92,246,0.15)',color:'#a78bfa',border:'1px solid rgba(139,92,246,0.3)'}}>
+          ${changedLoading?'Loading…':'🔄 What Changed Today?'}
+        </button>
+      </div>
+    </div>
+
+    <!-- Health Score + KPI Row -->
+    <div style=${{display:'grid',gridTemplateColumns:'180px repeat(5,1fr)',gap:10}}>
+      <!-- Health Score Gauge -->
+      <div style=${{background:'var(--sf)',borderRadius:14,border:'1px solid var(--bd2)',padding:'16px',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:6}}>
+        <div style=${{position:'relative',width:80,height:80}}>
+          <svg width="80" height="80" viewBox="0 0 80 80">
+            <circle cx="40" cy="40" r="32" fill="none" stroke="var(--bd2)" strokeWidth="8"/>
+            <circle cx="40" cy="40" r="32" fill="none" stroke=${healthColor} strokeWidth="8"
+              strokeDasharray=${2*Math.PI*32}
+              strokeDashoffset=${2*Math.PI*32*(1-healthScore/100)}
+              strokeLinecap="round" transform="rotate(-90 40 40)"
+              style=${{transition:'stroke-dashoffset 1s ease'}}/>
+          </svg>
+          <div style=${{position:'absolute',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center'}}>
+            <span style=${{fontSize:18,fontWeight:800,color:healthColor}}>${healthScore}</span>
+          </div>
+        </div>
+        <div style=${{fontSize:11,fontWeight:700,color:healthColor}}>${healthLabel}</div>
+        <div style=${{fontSize:10,color:'var(--tx3)'}}>Portfolio Health</div>
+      </div>
+      ${[
+        {label:'Active Tasks',val:active,color:'#3b82f6',icon:'⚡',nav:'tasks'},
+        {label:'Completed',val:done,color:'#22c55e',icon:'✅',nav:'tasks:stage:completed'},
+        {label:'Blocked',val:blocked,color:'#ef4444',icon:'🚫',nav:'tasks:stage:blocked'},
+        {label:'Overdue',val:overdue,color:'#f59e0b',icon:'⏰',nav:'tasks'},
+        {label:'Critical',val:critical,color:'#dc2626',icon:'🔥',nav:'tasks:priority:critical'},
+      ].map(s=>html`
+        <div key=${s.label} style=${{background:'var(--sf)',borderRadius:14,border:'1px solid var(--bd2)',padding:'14px 12px',cursor:'pointer',transition:'all .15s'}}
+          onClick=${()=>onNav(s.nav)}
+          onMouseEnter=${e=>{e.currentTarget.style.transform='translateY(-2px)';e.currentTarget.style.boxShadow='0 8px 24px rgba(0,0,0,.15)';}}
+          onMouseLeave=${e=>{e.currentTarget.style.transform='';e.currentTarget.style.boxShadow='';}}>
+          <div style=${{fontSize:20}}>${s.icon}</div>
+          <div style=${{fontSize:22,fontWeight:800,color:s.color,margin:'4px 0 2px'}}>${s.val}</div>
+          <div style=${{fontSize:10,color:'var(--tx3)',fontWeight:600}}>${s.label}</div>
+          <div style=${{marginTop:6,height:3,borderRadius:2,background:'var(--bd2)'}}><div style=${{height:'100%',borderRadius:2,background:s.color,width:Math.min(100,s.val/Math.max(t.length,1)*100)+'%',transition:'width 1s ease'}}></div></div>
+        </div>
+      `)}
+    </div>
+
+    <!-- Main Grid: Project Heatmap + Workload + Stage Pipeline -->
+    <div style=${{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:12}}>
+      <!-- Project Risk Heatmap -->
+      <div style=${{background:'var(--sf)',borderRadius:14,border:'1px solid var(--bd2)',padding:'14px',display:'flex',flexDirection:'column',gap:8}}>
+        <div style=${{fontSize:13,fontWeight:700,color:'var(--tx)',marginBottom:2}}>🗺 Project Risk Heatmap</div>
+        <div style=${{display:'flex',flexDirection:'column',gap:6,maxHeight:220,overflowY:'auto'}}>
+          ${projectHealth.map(proj=>html`
+            <div key=${proj.id} style=${{display:'flex',alignItems:'center',gap:8,padding:'6px 8px',borderRadius:8,background:RISK_BG[proj.risk],border:'1px solid '+RISK_COLORS[proj.risk]+'33',cursor:'pointer'}}
+              onClick=${()=>onNav('projects')}>
+              <div style=${{width:8,height:8,borderRadius:2,background:RISK_COLORS[proj.risk],flexShrink:0}}></div>
+              <div style=${{flex:1,minWidth:0}}>
+                <div style=${{fontSize:11,fontWeight:600,color:'var(--tx)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>${proj.name}</div>
+                <div style=${{fontSize:10,color:'var(--tx3)'}}>${proj.total} tasks · ${proj.blocked} blocked · ${proj.overdue} overdue</div>
+              </div>
+              <div style=${{fontSize:10,fontWeight:700,color:RISK_COLORS[proj.risk],textTransform:'uppercase',flexShrink:0}}>${proj.risk}</div>
+              <div style=${{width:28,fontSize:10,fontWeight:700,color:'var(--tx2)',textAlign:'right'}}>${proj.pct}%</div>
+            </div>
+          `)}
+          ${projectHealth.length===0?html`<div style=${{color:'var(--tx3)',fontSize:12,textAlign:'center',padding:'20px 0'}}>No projects yet</div>`:null}
+        </div>
+      </div>
+
+      <!-- Team Workload Matrix -->
+      <div style=${{background:'var(--sf)',borderRadius:14,border:'1px solid var(--bd2)',padding:'14px',display:'flex',flexDirection:'column',gap:8}}>
+        <div style=${{fontSize:13,fontWeight:700,color:'var(--tx)',marginBottom:2}}>👥 Team Workload Matrix</div>
+        <div style=${{display:'flex',flexDirection:'column',gap:5,maxHeight:220,overflowY:'auto'}}>
+          ${workloadData.map(user=>html`
+            <div key=${user.id} style=${{display:'flex',alignItems:'center',gap:8}}>
+              <${Av} u=${user} size=${22}/>
+              <div style=${{flex:1,minWidth:0}}>
+                <div style=${{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:2}}>
+                  <span style=${{fontSize:10,fontWeight:600,color:'var(--tx)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:90}}>${user.name.split(' ')[0]}</span>
+                  <span style=${{fontSize:10,color:user.count>8?'#ef4444':user.count>5?'#f59e0b':'var(--tx3)',fontWeight:user.count>5?700:400}}>${user.count} tasks</span>
+                </div>
+                <div style=${{height:4,background:'var(--bd2)',borderRadius:2}}>
+                  <div style=${{height:'100%',borderRadius:2,background:user.count>8?'#ef4444':user.count>5?'#f59e0b':'#3b82f6',width:Math.min(100,user.count/Math.max(...workloadData.map(x=>x.count),1)*100)+'%',transition:'width 1s ease'}}></div>
+                </div>
+              </div>
+            </div>
+          `)}
+          ${workloadData.length===0?html`<div style=${{color:'var(--tx3)',fontSize:12,textAlign:'center',padding:'20px 0'}}>No team members</div>`:null}
+        </div>
+      </div>
+
+      <!-- Stage Pipeline -->
+      <div style=${{background:'var(--sf)',borderRadius:14,border:'1px solid var(--bd2)',padding:'14px',display:'flex',flexDirection:'column',gap:8}}>
+        <div style=${{fontSize:13,fontWeight:700,color:'var(--tx)',marginBottom:2}}>📊 Stage Pipeline</div>
+        <div style=${{display:'flex',flexDirection:'column',gap:8}}>
+          ${stageData.map(s=>html`
+            <div key=${s.name}>
+              <div style=${{display:'flex',justifyContent:'space-between',marginBottom:3}}>
+                <span style=${{fontSize:11,color:'var(--tx2)',fontWeight:600}}>${s.name}</span>
+                <span style=${{fontSize:11,fontWeight:700,color:s.color}}>${s.count}</span>
+              </div>
+              <div style=${{height:8,background:'var(--bd2)',borderRadius:4}}>
+                <div style=${{height:'100%',borderRadius:4,background:s.color,width:(s.count/maxStage*100)+'%',transition:'width 1s ease'}}></div>
+              </div>
+            </div>
+          `)}
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Row: Health Summary + Task Breakdown -->
+    <div style=${{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+      <!-- AI Health Summary -->
+      <div style=${{background:'var(--sf)',borderRadius:14,border:'1px solid var(--bd2)',padding:'14px'}}>
+        <div style=${{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
+          <div style=${{fontSize:13,fontWeight:700,color:'var(--tx)'}}>🤖 AI Health Summary</div>
+          <button class="btn bg" onClick=${loadAiHealth} disabled=${aiLoading} style=${{fontSize:11,padding:'4px 10px'}}>
+            ${aiLoading?'Analyzing…':'Analyze →'}
+          </button>
+        </div>
+        ${aiHealth?html`<div style=${{fontSize:12,color:'var(--tx2)',lineHeight:1.6,whiteSpace:'pre-wrap'}}>${aiHealth}</div>`
+          :html`<div style=${{fontSize:12,color:'var(--tx3)',fontStyle:'italic',padding:'12px 0'}}>Click "Analyze →" to get an AI-generated health summary of your portfolio.</div>`}
+      </div>
+
+      <!-- AI Task Breakdown -->
+      <div style=${{background:'var(--sf)',borderRadius:14,border:'1px solid var(--bd2)',padding:'14px'}}>
+        <div style=${{fontSize:13,fontWeight:700,color:'var(--tx)',marginBottom:8}}>✂️ AI Task Breakdown</div>
+        <div style=${{display:'flex',gap:6,marginBottom:8}}>
+          <input class="inp" placeholder="Enter a requirement to break down…" value=${taskInput} onInput=${e=>setTaskInput(e.target.value)}
+            style=${{flex:1,fontSize:12,padding:'7px 10px',height:32}}
+            onKeyDown=${e=>{if(e.key==='Enter')breakdownTask();}}/>
+          <button class="btn bg" onClick=${breakdownTask} disabled=${bdLoading} style=${{fontSize:11,padding:'4px 10px',flexShrink:0}}>${bdLoading?'…':'Break Down'}</button>
+        </div>
+        ${breakdown?html`
+          <div style=${{maxHeight:160,overflowY:'auto',display:'flex',flexDirection:'column',gap:4}}>
+            ${breakdown.map((t2,i)=>html`
+              <div key=${i} style=${{padding:'5px 8px',background:'rgba(59,130,246,0.08)',border:'1px solid rgba(59,130,246,0.2)',borderRadius:6,fontSize:11,color:'var(--tx2)'}}>
+                <span style=${{fontWeight:600,color:'#3b82f6'}}>${i+1}.</span> ${typeof t2==='string'?t2:t2.title||JSON.stringify(t2)}
+              </div>
+            `)}
+          </div>
+        `:null}
+      </div>
+    </div>
+
+    <!-- What Changed Today + Status Report -->
+    ${whatChanged?html`
+      <div style=${{background:'rgba(139,92,246,0.06)',borderRadius:14,border:'1px solid rgba(139,92,246,0.2)',padding:'14px'}}>
+        <div style=${{fontSize:13,fontWeight:700,color:'#a78bfa',marginBottom:6}}>🔄 What Changed Today</div>
+        <div style=${{fontSize:12,color:'var(--tx2)',lineHeight:1.7,whiteSpace:'pre-wrap'}}>${whatChanged}</div>
+      </div>
+    `:null}
+
+    ${statusReport?html`
+      <div style=${{background:'rgba(34,197,94,0.06)',borderRadius:14,border:'1px solid rgba(34,197,94,0.2)',padding:'14px'}}>
+        <div style=${{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
+          <div style=${{fontSize:13,fontWeight:700,color:'#22c55e'}}>📋 Status Report</div>
+          <button class="btn bg" style=${{fontSize:11}} onClick=${()=>{navigator.clipboard.writeText(statusReport);window._pfToast&&window._pfToast('success','Copied!','Status report copied to clipboard');}}>Copy</button>
+        </div>
+        <pre style=${{fontSize:11,color:'var(--tx2)',lineHeight:1.7,whiteSpace:'pre-wrap',margin:0,fontFamily:'inherit'}}>${statusReport}</pre>
+      </div>
+    `:null}
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SPRINT BOARD
+// ═══════════════════════════════════════════════════════════════════════════════
+function SprintBoard({cu,tasks,projects,users,reload}){
+  const t=safe(tasks);const p=safe(projects);
+  const [sprints,setSprints]=useState([]);
+  const [loading,setLoading]=useState(true);
+  const [showCreate,setShowCreate]=useState(false);
+  const [form,setForm]=useState({name:'',start_date:'',end_date:'',project_id:'',goal:''});
+  const [activeSprintId,setActiveSprintId]=useState(null);
+  const [backlog,setBacklog]=useState([]);
+  const [sprintTasks,setSprintTasks]=useState([]);
+  const [aiSummary,setAiSummary]=useState('');
+  const [summaryLoading,setSummaryLoading]=useState(false);
+
+  useEffect(()=>{loadSprints();},[]);
+
+  async function loadSprints(){
+    setLoading(true);
+    try{
+      const r=await api.get('/api/sprints');
+      setSprints(Array.isArray(r)?r:[]);
+      const active=(Array.isArray(r)?r:[]).find(s=>s.status==='active');
+      if(active){setActiveSprintId(active.id);loadSprintTasks(active.id);}
+    }catch(e){}
+    setLoading(false);
+  }
+
+  async function loadSprintTasks(sid){
+    try{
+      const r=await api.get('/api/sprints/'+sid+'/tasks');
+      setSprintTasks(Array.isArray(r)?r:[]);
+    }catch(e){}
+  }
+
+  const activeSprint=sprints.find(s=>s.id===activeSprintId)||sprints[0];
+  const inSprint=new Set(sprintTasks.map(x=>x.id));
+  const backlogTasks=t.filter(x=>!inSprint.has(x.id)&&x.stage!=='completed');
+  const sprintDone=sprintTasks.filter(x=>x.stage==='completed').length;
+  const sprintTotal=sprintTasks.length;
+  const sprintPct=sprintTotal?Math.round(sprintDone/sprintTotal*100):0;
+
+  async function createSprint(){
+    if(!form.name.trim()){window._pfToast&&window._pfToast('error','Required','Sprint name is required');return;}
+    const r=await api.post('/api/sprints',form);
+    if(r.error){window._pfToast&&window._pfToast('error','Error',r.error);return;}
+    window._pfToast&&window._pfToast('success','Sprint Created','New sprint added successfully');
+    setShowCreate(false);setForm({name:'',start_date:'',end_date:'',project_id:'',goal:''});
+    loadSprints();
+  }
+
+  async function addToSprint(taskId){
+    if(!activeSprint){window._pfToast&&window._pfToast('error','No Sprint','Create or select an active sprint first');return;}
+    await api.post('/api/sprints/'+activeSprint.id+'/tasks',{task_id:taskId});
+    loadSprintTasks(activeSprint.id);
+  }
+
+  async function genAiSummary(){
+    if(!activeSprint)return;
+    setSummaryLoading(true);
+    try{
+      const r=await api.post('/api/ai/sprint-summary',{sprint:activeSprint,tasks:sprintTasks});
+      setAiSummary(r.summary||r.error||'');
+    }catch(e){setAiSummary('Error generating summary.');}
+    setSummaryLoading(false);
+  }
+
+  const STAGE_COLS=[
+    {key:'backlog',label:'Backlog',color:'#64748b'},
+    {key:'in-progress',label:'In Progress',color:'#3b82f6'},
+    {key:'review',label:'Review',color:'#8b5cf6'},
+    {key:'completed',label:'Done',color:'#22c55e'},
+  ];
+
+  return html`
+  <div style=${{height:'100%',overflowY:'auto',padding:'16px 20px',display:'flex',flexDirection:'column',gap:14}}>
+    <!-- Header -->
+    <div style=${{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:8}}>
+      <div>
+        <h2 style=${{margin:0,fontSize:18,fontWeight:800,color:'var(--tx)',letterSpacing:'-0.02em'}}>⚡ Sprint Board</h2>
+        ${activeSprint?html`<p style=${{margin:0,fontSize:12,color:'var(--tx3)'}}>${activeSprint.name} · ${activeSprint.start_date||'?'} → ${activeSprint.end_date||'?'}</p>`:null}
+      </div>
+      <div style=${{display:'flex',gap:8}}>
+        ${activeSprint?html`<button class="btn bg" onClick=${genAiSummary} disabled=${summaryLoading} style=${{fontSize:12}}>${summaryLoading?'Generating…':'🤖 AI Sprint Summary'}</button>`:null}
+        <button class="btn bam" onClick=${()=>setShowCreate(true)} style=${{fontSize:12}}>+ New Sprint</button>
+      </div>
+    </div>
+
+    <!-- Sprint selector -->
+    ${sprints.length>0?html`
+    <div style=${{display:'flex',gap:8,flexWrap:'wrap'}}>
+      ${sprints.map(s=>html`
+        <button key=${s.id} onClick=${()=>{setActiveSprintId(s.id);loadSprintTasks(s.id);}}
+          style=${{padding:'5px 12px',borderRadius:20,fontSize:11,fontWeight:600,cursor:'pointer',border:'1px solid',
+            background:activeSprintId===s.id?'rgba(59,130,246,0.15)':'transparent',
+            color:activeSprintId===s.id?'#60a5fa':'var(--tx3)',
+            borderColor:activeSprintId===s.id?'rgba(59,130,246,0.4)':'var(--bd)'}}>
+          ${s.name} <span style=${{opacity:.7,fontWeight:400}}>${s.status}</span>
+        </button>
+      `)}
+    </div>`:null}
+
+    <!-- Sprint progress bar -->
+    ${activeSprint?html`
+    <div style=${{background:'var(--sf)',borderRadius:12,border:'1px solid var(--bd2)',padding:'12px 16px'}}>
+      <div style=${{display:'flex',justifyContent:'space-between',marginBottom:6}}>
+        <span style=${{fontSize:12,fontWeight:700,color:'var(--tx)'}}>${activeSprint.goal||'Sprint Goal not set'}</span>
+        <span style=${{fontSize:12,fontWeight:700,color:'#22c55e'}}>${sprintDone}/${sprintTotal} tasks · ${sprintPct}%</span>
+      </div>
+      <div style=${{height:8,background:'var(--bd2)',borderRadius:4}}>
+        <div style=${{height:'100%',borderRadius:4,background:'#22c55e',width:sprintPct+'%',transition:'width 1s ease'}}></div>
+      </div>
+    </div>`:null}
+
+    <!-- AI Summary -->
+    ${aiSummary?html`
+    <div style=${{background:'rgba(139,92,246,0.07)',border:'1px solid rgba(139,92,246,0.25)',borderRadius:12,padding:'12px 14px'}}>
+      <div style=${{fontSize:12,fontWeight:700,color:'#a78bfa',marginBottom:4}}>🤖 AI Sprint Summary</div>
+      <div style=${{fontSize:12,color:'var(--tx2)',lineHeight:1.6,whiteSpace:'pre-wrap'}}>${aiSummary}</div>
+    </div>`:null}
+
+    <!-- Kanban columns for sprint tasks -->
+    <div style=${{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:10,flex:1}}>
+      ${STAGE_COLS.map(col=>html`
+        <div key=${col.key} style=${{background:'var(--sf)',borderRadius:12,border:'1px solid var(--bd2)',display:'flex',flexDirection:'column',overflow:'hidden'}}>
+          <div style=${{padding:'10px 12px',borderBottom:'1px solid var(--bd)',background:'rgba(0,0,0,.03)',display:'flex',alignItems:'center',gap:6}}>
+            <div style=${{width:8,height:8,borderRadius:2,background:col.color}}></div>
+            <span style=${{fontSize:12,fontWeight:700,color:'var(--tx)'}}>${col.label}</span>
+            <span style=${{marginLeft:'auto',fontSize:11,color:'var(--tx3)',background:'var(--bd)',borderRadius:10,padding:'1px 7px'}}>
+              ${sprintTasks.filter(x=>x.stage===col.key).length}
+            </span>
+          </div>
+          <div style=${{flex:1,overflowY:'auto',padding:'8px',display:'flex',flexDirection:'column',gap:6,maxHeight:340}}>
+            ${sprintTasks.filter(x=>x.stage===col.key).map(task=>html`
+              <div key=${task.id} style=${{background:'var(--bg)',border:'1px solid var(--bd)',borderRadius:8,padding:'8px 10px',cursor:'pointer',transition:'all .12s'}}
+                onMouseEnter=${e=>{e.currentTarget.style.borderColor='rgba(59,130,246,0.5)';e.currentTarget.style.transform='translateY(-1px)';}}
+                onMouseLeave=${e=>{e.currentTarget.style.borderColor='var(--bd)';e.currentTarget.style.transform='';}}>
+                <div style=${{fontSize:11,fontWeight:600,color:'var(--tx)',marginBottom:3}}>${task.title}</div>
+                ${task.assignee?html`<div style=${{fontSize:10,color:'var(--tx3)'}}>${(safe(users).find(u2=>u2.id===task.assignee)||{}).name||'?'}</div>`:null}
+                ${task.priority?html`<span style=${{fontSize:9,padding:'2px 6px',borderRadius:4,background:task.priority==='critical'?'rgba(239,68,68,.15)':'rgba(100,116,139,.12)',color:task.priority==='critical'?'#ef4444':'var(--tx3)',fontWeight:700,textTransform:'uppercase'}}>${task.priority}</span>`:null}
+              </div>
+            `)}
+            ${sprintTasks.filter(x=>x.stage===col.key).length===0?html`
+              <div style=${{textAlign:'center',color:'var(--tx3)',fontSize:11,padding:'16px 0',fontStyle:'italic'}}>No tasks</div>
+            `:null}
+          </div>
+        </div>
+      `)}
+    </div>
+
+    <!-- Backlog section -->
+    <div style=${{background:'var(--sf)',borderRadius:12,border:'1px solid var(--bd2)',padding:'12px 14px'}}>
+      <div style=${{fontSize:13,fontWeight:700,color:'var(--tx)',marginBottom:8}}>📋 Backlog (${backlogTasks.length} tasks available)</div>
+      <div style=${{display:'flex',flexDirection:'column',gap:5,maxHeight:200,overflowY:'auto'}}>
+        ${backlogTasks.slice(0,20).map(task=>html`
+          <div key=${task.id} style=${{display:'flex',alignItems:'center',gap:8,padding:'6px 8px',borderRadius:7,border:'1px solid var(--bd)',background:'var(--bg)'}}>
+            <span style=${{fontSize:10,color:'var(--tx3)',fontWeight:600,flexShrink:0}}>${task.tid||task.id}</span>
+            <span style=${{fontSize:11,flex:1,color:'var(--tx)'}}>${task.title}</span>
+            ${activeSprint?html`<button class="btn bg" onClick=${()=>addToSprint(task.id)} style=${{fontSize:10,padding:'3px 8px',flexShrink:0}}>+ Sprint</button>`:null}
+          </div>
+        `)}
+        ${backlogTasks.length===0?html`<div style=${{color:'var(--tx3)',fontSize:12,textAlign:'center',padding:'12px 0',fontStyle:'italic'}}>All tasks are in sprint or completed!</div>`:null}
+      </div>
+    </div>
+
+    <!-- Create Sprint Modal -->
+    ${showCreate?html`
+    <div style=${{position:'fixed',inset:0,background:'rgba(0,0,0,.5)',zIndex:9000,display:'flex',alignItems:'center',justifyContent:'center',backdropFilter:'blur(4px)'}}
+      onClick=${e=>{if(e.target===e.currentTarget)setShowCreate(false);}}>
+      <div style=${{background:'var(--sf)',borderRadius:16,border:'1px solid var(--bd)',padding:'24px',width:'min(420px,90vw)',display:'flex',flexDirection:'column',gap:12}}>
+        <div style=${{fontSize:15,fontWeight:800,color:'var(--tx)'}}>Create Sprint</div>
+        <input class="inp" placeholder="Sprint name *" value=${form.name} onInput=${e=>setForm(f=>({...f,name:e.target.value}))}/>
+        <input class="inp" placeholder="Sprint goal" value=${form.goal} onInput=${e=>setForm(f=>({...f,goal:e.target.value}))}/>
+        <div style=${{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
+          <div><label style=${{fontSize:10,color:'var(--tx3)',fontWeight:600}}>Start Date</label><input type="date" class="inp" value=${form.start_date} onInput=${e=>setForm(f=>({...f,start_date:e.target.value}))}/></div>
+          <div><label style=${{fontSize:10,color:'var(--tx3)',fontWeight:600}}>End Date</label><input type="date" class="inp" value=${form.end_date} onInput=${e=>setForm(f=>({...f,end_date:e.target.value}))}/></div>
+        </div>
+        <select class="inp" value=${form.project_id} onChange=${e=>setForm(f=>({...f,project_id:e.target.value}))}>
+          <option value="">All Projects</option>
+          ${p.map(proj=>html`<option key=${proj.id} value=${proj.id}>${proj.name}</option>`)}
+        </select>
+        <div style=${{display:'flex',gap:8,justifyContent:'flex-end'}}>
+          <button class="btn" onClick=${()=>setShowCreate(false)}>Cancel</button>
+          <button class="btn bam" onClick=${createSprint}>Create Sprint</button>
+        </div>
+      </div>
+    </div>`:null}
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// RISK RADAR
+// ═══════════════════════════════════════════════════════════════════════════════
+function RiskRadar({cu,tasks,projects,users,onNav}){
+  const t=safe(tasks);const p=safe(projects);const u=safe(users);
+  const [aiRisks,setAiRisks]=useState(null);
+  const [loading,setLoading]=useState(false);
+
+  const now=new Date();
+  const overdueT=t.filter(x=>x.due&&new Date(x.due)<now&&x.stage!=='completed');
+  const blockedT=t.filter(x=>x.stage==='blocked');
+  const criticalT=t.filter(x=>x.priority==='critical'&&x.stage!=='completed');
+  const stalledT=t.filter(x=>{
+    if(x.stage==='completed')return false;
+    const created=new Date(x.created||x.updated||0);
+    return (now-created)>7*24*3600*1000;
+  });
+  const unassignedT=t.filter(x=>!x.assignee&&x.stage!=='completed');
+
+  const risks=[
+    {level:'critical',label:'Overdue Tasks',count:overdueT.length,tasks:overdueT,color:'#ef4444',bg:'rgba(239,68,68,0.1)',icon:'🔴',desc:'Tasks past their due date'},
+    {level:'high',label:'Blocked Tasks',count:blockedT.length,tasks:blockedT,color:'#f97316',bg:'rgba(249,115,22,0.1)',icon:'🟠',desc:'Tasks in blocked state'},
+    {level:'high',label:'Critical Priority',count:criticalT.length,tasks:criticalT,color:'#dc2626',bg:'rgba(220,38,38,0.1)',icon:'🔥',desc:'Critical unfinished tasks'},
+    {level:'medium',label:'Stalled Tasks',count:stalledT.length,tasks:stalledT,color:'#f59e0b',bg:'rgba(245,158,11,0.1)',icon:'🟡',desc:'Not updated in 7+ days'},
+    {level:'low',label:'Unassigned Tasks',count:unassignedT.length,tasks:unassignedT,color:'#6366f1',bg:'rgba(99,102,241,0.1)',icon:'🔵',desc:'Tasks with no assignee'},
+  ];
+
+  const totalRiskScore=overdueT.length*4+blockedT.length*3+criticalT.length*4+stalledT.length*2+unassignedT.length*1;
+  const riskLevel=totalRiskScore>30?'CRITICAL':totalRiskScore>15?'HIGH':totalRiskScore>5?'MEDIUM':'LOW';
+  const RISK_BADGE_COLOR={CRITICAL:'#ef4444',HIGH:'#f97316',MEDIUM:'#f59e0b',LOW:'#22c55e'};
+
+  async function getAiRiskAnalysis(){
+    setLoading(true);
+    try{
+      const r=await api.post('/api/ai/risk-analysis',{
+        risks:{overdue:overdueT.length,blocked:blockedT.length,critical:criticalT.length,stalled:stalledT.length,unassigned:unassignedT.length},
+        score:totalRiskScore
+      });
+      setAiRisks(r.analysis||r.error||'');
+    }catch(e){setAiRisks('Error loading analysis.');}
+    setLoading(false);
+  }
+
+  const [expandedRisk,setExpandedRisk]=useState(null);
+
+  return html`
+  <div style=${{height:'100%',overflowY:'auto',padding:'16px 20px',display:'flex',flexDirection:'column',gap:14}}>
+    <div style=${{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:8}}>
+      <div>
+        <h2 style=${{margin:0,fontSize:18,fontWeight:800,color:'var(--tx)'}}>🎯 Risk Radar</h2>
+        <p style=${{margin:0,fontSize:12,color:'var(--tx3)'}}>Identify and track project risks before they escalate</p>
+      </div>
+      <div style=${{display:'flex',alignItems:'center',gap:10}}>
+        <div style=${{padding:'6px 14px',borderRadius:20,background:RISK_BADGE_COLOR[riskLevel]+'22',border:'1px solid '+RISK_BADGE_COLOR[riskLevel]+'44',fontSize:12,fontWeight:700,color:RISK_BADGE_COLOR[riskLevel]}}>
+          Risk: ${riskLevel} (${totalRiskScore} pts)
+        </div>
+        <button class="btn bg" onClick=${getAiRiskAnalysis} disabled=${loading} style=${{fontSize:12}}>
+          ${loading?'Analyzing…':'🤖 AI Risk Analysis'}
+        </button>
+      </div>
+    </div>
+
+    <!-- Risk Cards -->
+    <div style=${{display:'flex',flexDirection:'column',gap:10}}>
+      ${risks.map(r=>html`
+        <div key=${r.label} style=${{background:'var(--sf)',borderRadius:12,border:'1px solid '+r.color+'33',overflow:'hidden'}}>
+          <div style=${{display:'flex',alignItems:'center',gap:12,padding:'12px 14px',cursor:'pointer',background:r.bg}}
+            onClick=${()=>setExpandedRisk(expandedRisk===r.label?null:r.label)}>
+            <span style=${{fontSize:20}}>${r.icon}</span>
+            <div style=${{flex:1}}>
+              <div style=${{fontSize:13,fontWeight:700,color:r.color}}>${r.label}</div>
+              <div style=${{fontSize:11,color:'var(--tx3)'}}>${r.desc}</div>
+            </div>
+            <div style=${{fontSize:24,fontWeight:800,color:r.color,minWidth:40,textAlign:'right'}}>${r.count}</div>
+            <div style=${{fontSize:14,color:'var(--tx3)',transform:expandedRisk===r.label?'rotate(180deg)':'',transition:'transform .2s'}}>▼</div>
+          </div>
+          ${expandedRisk===r.label&&r.tasks.length>0?html`
+          <div style=${{padding:'8px 12px',borderTop:'1px solid '+r.color+'22',maxHeight:200,overflowY:'auto',display:'flex',flexDirection:'column',gap:4}}>
+            ${r.tasks.slice(0,15).map(task=>html`
+              <div key=${task.id} style=${{display:'flex',alignItems:'center',gap:8,padding:'5px 8px',background:'var(--bg)',borderRadius:6,border:'1px solid var(--bd)'}}>
+                <span style=${{fontSize:10,color:'var(--tx3)',flexShrink:0}}>${task.tid||task.id}</span>
+                <span style=${{fontSize:11,flex:1,color:'var(--tx)'}}>${task.title}</span>
+                ${task.due?html`<span style=${{fontSize:10,color:new Date(task.due)<now?'#ef4444':'var(--tx3)',flexShrink:0}}>${task.due}</span>`:null}
+              </div>
+            `)}
+            ${r.tasks.length>15?html`<div style=${{fontSize:11,color:'var(--tx3)',textAlign:'center'}}>+${r.tasks.length-15} more</div>`:null}
+          </div>`:null}
+        </div>
+      `)}
+    </div>
+
+    ${aiRisks?html`
+    <div style=${{background:'rgba(139,92,246,0.07)',border:'1px solid rgba(139,92,246,0.25)',borderRadius:12,padding:'14px'}}>
+      <div style=${{fontSize:13,fontWeight:700,color:'#a78bfa',marginBottom:6}}>🤖 AI Risk Analysis & Recommendations</div>
+      <div style=${{fontSize:12,color:'var(--tx2)',lineHeight:1.7,whiteSpace:'pre-wrap'}}>${aiRisks}</div>
+    </div>`:null}
+  </div>`;
+}
+

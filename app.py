@@ -359,7 +359,7 @@ _SCANNER_PREFIXES = (
     '/cgi-bin/', '/cgi/', '/../', '/etc/passwd', '/proc/self',
     '/vendor/', '/composer.', '/node_modules/', '/.DS_Store',
     '/backup/', '/backups/', '/db/', '/database/', '/dumps/',
-    '/old/', '/tmp/', '/temp/', '/upload/', '/uploads/',
+    '/old/', '/test/', '/tmp/', '/temp/', '/upload/', '/uploads/',
     '/media/system/', '/wp-includes/', '/wp-content/',
     '/index/function', '/.dj/', '/adminfuns',
 )
@@ -368,45 +368,20 @@ _SCANNER_EXACT = {
     '/info.php', '/test.php', '/phpinfo.php', '/.env',
 }
 
-def _is_safe_app_path(path):
-    """Return True for legitimate first-party app/API routes.
-
-    Important: workspaces may legitimately have slugs such as /test/<ws_id>/dashboard.
-    Earlier builds treated /test/ as a scanner prefix and then auto-banned the user IP,
-    which caused Railway logs to show 404 first and then 444 for the real dashboard.
-    """
-    p = (path or "/").lower()
-    if p in ("/", "/app", "/dashboard", "/sw.js", "/healthz", "/favicon.ico"):
-        return True
-    if p.startswith(("/api/", "/static/")):
-        return True
-    parts = [x for x in p.strip("/").split("/") if x]
-    if len(parts) >= 2 and parts[1].startswith("ws"):
-        allowed_pages = {
-            "dashboard", "projects", "tasks", "kanban", "messages", "channels",
-            "dm", "settings", "profile", "analytics", "tickets", "timeline",
-            "reminders", "team", "productivity", "ai-docs", "timesheet",
-            "vault", "password-generator", "app", "sso"
-        }
-        return len(parts) == 2 or parts[2] in allowed_pages
-    return False
-
 @app.before_request
 def block_scanners():
     """
     Multi-layer bot/scanner defence:
     Layer 1 — Instant IP ban check (sub-millisecond, no logging)
-    Layer 2 — Path fingerprint matching against scanner patterns
-    Layer 3 — Auto-ban scanner paths only, never workspace URLs
+    Layer 2 — Path fingerprint matching against 100+ scanner patterns
+    Layer 3 — Auto-ban: IPs that hit 3+ scanner paths are banned 24h
     Layer 4 — General rate limit: 120 req/min per IP (burst protection)
     """
     ip   = _client_ip()
     path = request.path.lower()
-    safe_app_path = _is_safe_app_path(path)
 
-    # ── Layer 1: Banned IP — drop scanner/non-app traffic only.
-    # Legitimate app/API routes are still allowed so a false positive cannot lock out users.
-    if _is_banned(ip) and not safe_app_path:
+    # ── Layer 1: Banned IP — drop immediately ────────────────────────────────
+    if _is_banned(ip):
         return '', 444   # Nginx-style silent drop (no body, connection close)
 
     # ── Layer 2: Path fingerprint matching ───────────────────────────────────
@@ -416,7 +391,7 @@ def block_scanners():
         path in _SCANNER_EXACT
     )
 
-    if is_scanner and not safe_app_path:
+    if is_scanner:
         # ── Layer 3: Record hit + auto-ban ───────────────────────────────────
         _record_scanner_hit(ip)
         log.info("[SECURITY] Blocked scanner %s → %s", ip, request.path)
@@ -499,7 +474,6 @@ def add_security_headers(response):
     response.headers["X-Frame-Options"] = "SAMEORIGIN"
     response.headers["X-XSS-Protection"] = "1; mode=block"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-    response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=(), payment=()"
     # 'unsafe-inline' removed — nonce-gated inline scripts only
     nonce_src = f"'nonce-{nonce}'" if nonce else ""
     response.headers["Content-Security-Policy"] = (
@@ -5337,8 +5311,8 @@ def serve_js(fn):
 def serve_sw():
     """Service Worker for background push notifications and offline caching."""
     sw_code = r"""
-// Project Tracker Service Worker v12.7 - stale UI cache purge
-const CACHE = 'pf-v12-7-visible-enterprise';
+// Project Tracker Service Worker v3
+const CACHE = 'pf-v3';
 const ICON = '/favicon.ico';
 
 // Install & cache shell assets
@@ -5350,17 +5324,9 @@ self.addEventListener('activate', e => {
   // Delete ALL old caches so stale requests (e.g. /${imgSrc}) are never replayed
   e.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(keys.map(k => caches.delete(k)))
+      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
     ).then(() => clients.claim())
   );
-});
-
-// Always use network for app shell/pages so new dashboard UI is never hidden by stale cache.
-self.addEventListener('fetch', e => {
-  const req = e.request;
-  if (req.mode === 'navigate' || new URL(req.url).pathname.endsWith('.js') || new URL(req.url).pathname === '/sw.js') {
-    e.respondWith(fetch(req, { cache: 'no-store' }).catch(() => fetch(req)));
-  }
 });
 
 // ── Push notification handler ────────────────────────────────────────────────
@@ -7860,142 +7826,6 @@ def email_to_task():
             (tid, ws_id, subject, body, "", reporter_id, "medium", "backlog", ts(), "", 0, "[]", "", ""))
     return jsonify({"ok": True, "task_id": tid})
 
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# V12.1 ENTERPRISE COMMAND CENTER — aggregated analytics for executive dashboard
-# ═══════════════════════════════════════════════════════════════════════════════
-def _parse_iso_date_safe(v):
-    if not v:
-        return None
-    try:
-        return datetime.fromisoformat(str(v)[:10])
-    except Exception:
-        return None
-
-@app.route("/api/command-center")
-@login_required
-def api_command_center():
-    """Workspace-level portfolio analytics used by the enhanced dashboard.
-    The endpoint is read-only and intentionally computes from existing tables so
-    it works without a risky schema migration.
-    """
-    ws = wid()
-    team_id = request.args.get("team_id", "").strip()
-    today = datetime.utcnow().date()
-    try:
-        with get_db() as db:
-            proj_rows = db.execute("SELECT * FROM projects WHERE workspace_id=?", (ws,)).fetchall()
-            task_rows = db.execute("SELECT * FROM tasks WHERE workspace_id=?", (ws,)).fetchall()
-            ticket_rows = db.execute("SELECT * FROM tickets WHERE workspace_id=?", (ws,)).fetchall()
-            users = db.execute("SELECT id,name,role,color,avatar FROM users WHERE workspace_id=?", (ws,)).fetchall()
-            try:
-                log_rows = db.execute("SELECT * FROM time_logs WHERE workspace_id=?", (ws,)).fetchall()
-            except Exception:
-                log_rows = []
-    except Exception as e:
-        log.exception("command-center failed")
-        return jsonify({"error": "Unable to build command center", "detail": str(e)}), 500
-
-    projects=[dict(r) for r in proj_rows]
-    tasks=[dict(r) for r in task_rows]
-    tickets=[dict(r) for r in ticket_rows]
-    users=[dict(r) for r in users]
-    logs=[dict(r) for r in log_rows]
-    if team_id:
-        projects=[p for p in projects if (p.get('team_id') or '') == team_id]
-        project_ids={p.get('id') for p in projects}
-        tasks=[t for t in tasks if (t.get('team_id') or '') == team_id or t.get('project') in project_ids]
-        tickets=[t for t in tickets if (t.get('team_id') or '') == team_id or t.get('project') in project_ids]
-        logs=[l for l in logs if (l.get('team_id') or '') == team_id or l.get('project_id') in project_ids]
-
-    active_stages={"backlog","planning","development","code_review","testing","uat","release","production","blocked"}
-    active_tasks=[t for t in tasks if t.get('stage') in active_stages]
-    completed=[t for t in tasks if t.get('stage') == 'completed']
-    overdue=[]
-    due_soon=[]
-    for t in active_tasks:
-        d=_parse_iso_date_safe(t.get('due'))
-        if not d: continue
-        delta=(d.date()-today).days
-        if delta < 0: overdue.append(t)
-        elif delta <= 7: due_soon.append(t)
-    blocked=[t for t in active_tasks if t.get('stage') == 'blocked']
-    critical=[t for t in active_tasks if t.get('priority') == 'critical']
-    high=[t for t in active_tasks if t.get('priority') == 'high']
-    open_tickets=[x for x in tickets if x.get('status') not in ('closed','resolved')]
-
-    # stage, priority, project, workload distributions
-    stages={}
-    priorities={}
-    for t in tasks:
-        stages[t.get('stage') or 'unknown']=stages.get(t.get('stage') or 'unknown',0)+1
-        priorities[t.get('priority') or 'medium']=priorities.get(t.get('priority') or 'medium',0)+1
-    workload=[]
-    for u in users:
-        assigned=[t for t in active_tasks if t.get('assignee') == u.get('id')]
-        workload.append({"id":u.get('id'),"name":u.get('name'),"role":u.get('role'),"active":len(assigned),"blocked":len([t for t in assigned if t.get('stage')=='blocked']),"critical":len([t for t in assigned if t.get('priority')=='critical']),"color":u.get('color') or '#2563eb'})
-    workload=sorted(workload, key=lambda x: (x['active'], x['critical']), reverse=True)
-
-    project_health=[]
-    for p in projects:
-        p_tasks=[t for t in tasks if t.get('project') == p.get('id')]
-        p_done=len([t for t in p_tasks if t.get('stage')=='completed'])
-        p_blocked=len([t for t in p_tasks if t.get('stage')=='blocked'])
-        target=_parse_iso_date_safe(p.get('target_date'))
-        is_overdue=bool(target and target.date() < today and (p.get('progress') or 0) < 100)
-        score=max(0, min(100, int(p.get('progress') or 0) - p_blocked*8 - (20 if is_overdue else 0)))
-        status='Healthy'
-        if is_overdue or p_blocked>2: status='At Risk'
-        elif p_blocked or score < 55: status='Watch'
-        project_health.append({"id":p.get('id'),"name":p.get('name'),"progress":int(p.get('progress') or 0),"tasks":len(p_tasks),"done":p_done,"blocked":p_blocked,"target_date":p.get('target_date') or '',"score":score,"status":status,"color":p.get('color') or '#2563eb'})
-    project_health=sorted(project_health, key=lambda x: (x['status']!='At Risk', x['score']))
-
-    # 14-day throughput from created/completed metadata where available
-    throughput=[]
-    for i in range(13,-1,-1):
-        d=today-timedelta(days=i)
-        key=d.isoformat()
-        created=sum(1 for t in tasks if str(t.get('created',''))[:10]==key)
-        done_count=sum(1 for t in completed if str(t.get('created',''))[:10] <= key) if i==0 else sum(1 for t in completed if str(t.get('due',''))[:10]==key)
-        hours=sum((float(l.get('hours') or 0)+float(l.get('minutes') or 0)/60.0) for l in logs if str(l.get('date',''))[:10]==key)
-        throughput.append({"day":d.strftime('%d %b'),"created":created,"completed":done_count,"hours":round(hours,1)})
-
-    risk_score=0
-    if active_tasks:
-        risk_score += min(35, round(len(overdue)/max(1,len(active_tasks))*100))
-        risk_score += min(30, round(len(blocked)/max(1,len(active_tasks))*100))
-        risk_score += min(20, round(len(critical)/max(1,len(active_tasks))*100))
-    if projects:
-        risk_score += min(15, len([p for p in project_health if p['status']=='At Risk'])*5)
-    risk_score=int(min(100,risk_score))
-    health_score=max(0,100-risk_score)
-
-    insights=[]
-    if overdue: insights.append({"type":"risk","title":"Overdue work needs attention","detail":f"{len(overdue)} active task(s) are past due. Move blockers or re-baseline delivery dates."})
-    if blocked: insights.append({"type":"blocker","title":"Blocked lane pressure","detail":f"{len(blocked)} task(s) are blocked. Run a 15-minute unblock review with owners."})
-    if critical: insights.append({"type":"priority","title":"Critical priority concentration","detail":f"{len(critical)} critical task(s) remain active. Protect engineering focus until these are closed."})
-    if due_soon: insights.append({"type":"deadline","title":"Upcoming delivery window","detail":f"{len(due_soon)} task(s) are due within 7 days. Confirm ETA and dependencies."})
-    if not insights: insights.append({"type":"good","title":"Portfolio is stable","detail":"No urgent overdue or blocked concentration detected from the current workspace data."})
-
-    return jsonify({
-        "generated_at": ts(),
-        "health_score": health_score,
-        "risk_score": risk_score,
-        "kpis": {
-            "projects": len(projects), "tasks": len(tasks), "active_tasks": len(active_tasks),
-            "completed_tasks": len(completed), "blocked_tasks": len(blocked), "overdue_tasks": len(overdue),
-            "due_soon_tasks": len(due_soon), "critical_tasks": len(critical), "high_tasks": len(high),
-            "open_tickets": len(open_tickets), "members": len(users)
-        },
-        "stage_distribution": [{"name":k,"value":v} for k,v in stages.items()],
-        "priority_distribution": [{"name":k,"value":v} for k,v in priorities.items()],
-        "workload": workload[:12],
-        "project_health": project_health[:12],
-        "throughput": throughput,
-        "insights": insights[:6]
-    })
-
 # ═══════════════════════════════════════════════════════════════════════════════
 # OPENAPI DOCS
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -8029,12 +7859,227 @@ def openapi_docs():
     }
     return jsonify(spec)
 
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# AI COMMAND CENTER ENDPOINTS — v13
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def _call_claude(api_key, system_prompt, user_prompt, max_tokens=1200):
+    """Shared helper to call Claude API."""
+    import urllib.request, json as _json
+    req_data = _json.dumps({
+        "model": "claude-sonnet-4-5",
+        "max_tokens": max_tokens,
+        "system": system_prompt,
+        "messages": [{"role": "user", "content": user_prompt}]
+    }).encode()
+    req = urllib.request.Request(
+        "https://api.anthropic.com/v1/messages", data=req_data, method="POST",
+        headers={"Content-Type":"application/json","x-api-key":api_key,"anthropic-version":"2023-06-01"})
+    with urllib.request.urlopen(req, timeout=30) as resp:
+        result = _json.loads(resp.read().decode())
+        return result["content"][0]["text"]
+
+def _get_ai_key():
+    with get_db() as db:
+        ws = db.execute("SELECT ai_api_key FROM workspaces WHERE id=?", (wid(),)).fetchone()
+        return (ws["ai_api_key"] if ws and ws["ai_api_key"] else "").strip()
+
+@app.route("/api/ai/project-health", methods=["POST"])
+@login_required
+def ai_project_health():
+    d = request.json or {}
+    api_key = _get_ai_key()
+    if not api_key:
+        return jsonify({"error": "NO_KEY", "message": "Configure Anthropic API key in Workspace Settings."}), 400
+    summary = d.get("task_summary", {})
+    system = "You are a senior project manager. Analyze portfolio health data and give a concise 3-5 bullet summary with specific recommendations. Be direct and actionable."
+    prompt = f"Portfolio health data: Total tasks: {summary.get('total',0)}, Active: {summary.get('active',0)}, Done: {summary.get('done',0)}, Blocked: {summary.get('blocked',0)}, Overdue: {summary.get('overdue',0)}, Critical: {summary.get('critical',0)}. Projects: {len(d.get('project_ids',[]))}. Give a health summary with top 3 action items."
+    try:
+        text = _call_claude(api_key, system, prompt)
+        return jsonify({"summary": text})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/ai/what-changed", methods=["POST"])
+@login_required
+def ai_what_changed():
+    api_key = _get_ai_key()
+    if not api_key:
+        return jsonify({"error": "NO_KEY"}), 400
+    with get_db() as db:
+        today = datetime.now().strftime("%Y-%m-%d")
+        updated = db.execute(
+            "SELECT t.title, t.stage, t.priority, u.name as assignee_name FROM tasks t "
+            "LEFT JOIN users u ON t.assignee=u.id "
+            "WHERE t.workspace_id=? AND date(t.updated)=?",
+            (wid(), today)).fetchall()
+        completed = [r for r in updated if r["stage"] == "completed"]
+        blocked = [r for r in updated if r["stage"] == "blocked"]
+    if not updated:
+        return jsonify({"summary": "No task updates recorded today yet. Check back later!"})
+    system = "You are a project status bot. Summarize what changed today in a friendly, executive-readable format with emojis."
+    prompt = f"Today ({today}), {len(updated)} tasks were updated. Completed: {[r['title'] for r in completed[:5]]}. Newly blocked: {[r['title'] for r in blocked[:5]]}. All updates: {[dict(r) for r in updated[:20]]}. Write a concise daily standup-style summary."
+    try:
+        text = _call_claude(api_key, system, prompt)
+        return jsonify({"summary": text})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/ai/status-report", methods=["POST"])
+@login_required
+def ai_status_report():
+    d = request.json or {}
+    api_key = _get_ai_key()
+    if not api_key:
+        return jsonify({"error": "NO_KEY"}), 400
+    tasks = d.get("tasks", [])
+    projects = d.get("projects", [])
+    system = "You are a project manager writing a professional weekly status report. Format as a clean text report with sections: Executive Summary, Progress by Project, Key Risks, Next Steps. Be concise and professional."
+    prompt = f"Generate a weekly status report for this data:\nProjects: {[p.get('name','?') for p in projects[:15]]}\nTotal tasks: {len(tasks)}, Completed: {len([t for t in tasks if t.get('stage')=='completed'])}, Blocked: {len([t for t in tasks if t.get('stage')=='blocked'])}, Overdue: {len([t for t in tasks if t.get('due','') and t.get('stage')!='completed'])}"
+    try:
+        text = _call_claude(api_key, system, prompt, max_tokens=1500)
+        return jsonify({"report": text})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/ai/task-breakdown", methods=["POST"])
+@login_required
+def ai_task_breakdown():
+    d = request.json or {}
+    api_key = _get_ai_key()
+    if not api_key:
+        return jsonify({"error": "NO_KEY"}), 400
+    requirement = d.get("requirement", "").strip()
+    if not requirement:
+        return jsonify({"error": "Empty requirement"}), 400
+    system = "You are a senior software engineer and project manager. Break down requirements into concrete, actionable development tasks. Respond ONLY with a JSON array of task title strings. No other text."
+    prompt = f"Break this requirement into 4-8 specific development tasks: {requirement}"
+    try:
+        text = _call_claude(api_key, system, prompt, max_tokens=800)
+        import json as _json, re as _re
+        text = _re.sub(r"```json|```", "", text).strip()
+        tasks = _json.loads(text)
+        if not isinstance(tasks, list):
+            tasks = [str(tasks)]
+        return jsonify({"tasks": tasks})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/ai/sprint-summary", methods=["POST"])
+@login_required
+def ai_sprint_summary():
+    d = request.json or {}
+    api_key = _get_ai_key()
+    if not api_key:
+        return jsonify({"error": "NO_KEY"}), 400
+    sprint = d.get("sprint", {})
+    tasks = d.get("tasks", [])
+    done = len([t for t in tasks if t.get("stage") == "completed"])
+    blocked = len([t for t in tasks if t.get("stage") == "blocked"])
+    system = "You are a scrum master writing a sprint review summary. Be concise, motivating, and highlight key achievements and risks."
+    prompt = f"Sprint: {sprint.get('name','?')}, Goal: {sprint.get('goal','not set')}, Duration: {sprint.get('start_date','?')} to {sprint.get('end_date','?')}. Tasks: {len(tasks)} total, {done} completed, {blocked} blocked. Write a sprint summary (3-4 sentences)."
+    try:
+        text = _call_claude(api_key, system, prompt)
+        return jsonify({"summary": text})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/ai/risk-analysis", methods=["POST"])
+@login_required
+def ai_risk_analysis():
+    d = request.json or {}
+    api_key = _get_ai_key()
+    if not api_key:
+        return jsonify({"error": "NO_KEY"}), 400
+    risks = d.get("risks", {})
+    score = d.get("score", 0)
+    system = "You are a risk management expert. Analyze project risks and give specific, actionable mitigation recommendations. Use bullet points."
+    prompt = f"Risk snapshot: Overdue: {risks.get('overdue',0)}, Blocked: {risks.get('blocked',0)}, Critical: {risks.get('critical',0)}, Stalled: {risks.get('stalled',0)}, Unassigned: {risks.get('unassigned',0)}. Risk score: {score}. Provide 3-5 specific mitigation actions."
+    try:
+        text = _call_claude(api_key, system, prompt)
+        return jsonify({"analysis": text})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SPRINT ENDPOINTS — v13
+# ═══════════════════════════════════════════════════════════════════════════════
+
+@app.route("/api/sprints", methods=["GET"])
+@login_required
+def list_sprints():
+    with get_db() as db:
+        try:
+            sprints = db.execute(
+                "SELECT * FROM sprints WHERE workspace_id=? ORDER BY created DESC",
+                (wid(),)).fetchall()
+            return jsonify([dict(s) for s in sprints])
+        except:
+            return jsonify([])
+
+@app.route("/api/sprints", methods=["POST"])
+@login_required
+def create_sprint():
+    d = request.json or {}
+    name = (d.get("name") or "").strip()
+    if not name:
+        return jsonify({"error": "Sprint name required"}), 400
+    with get_db() as db:
+        try:
+            sid = "SP-" + datetime.now().strftime("%Y%m%d%H%M%S")
+            db.execute(
+                "INSERT INTO sprints (id, workspace_id, name, goal, start_date, end_date, project_id, status, created) "
+                "VALUES (?,?,?,?,?,?,?,?,datetime('now'))",
+                (sid, wid(), name, d.get("goal",""), d.get("start_date",""), d.get("end_date",""),
+                 d.get("project_id") or None, "active"))
+            db.commit()
+            return jsonify({"id": sid, "name": name})
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
+@app.route("/api/sprints/<sid>/tasks", methods=["GET"])
+@login_required
+def get_sprint_tasks(sid):
+    with get_db() as db:
+        try:
+            rows = db.execute(
+                "SELECT t.* FROM tasks t JOIN sprint_tasks st ON t.id=st.task_id WHERE st.sprint_id=? AND t.workspace_id=?",
+                (sid, wid())).fetchall()
+            return jsonify([dict(r) for r in rows])
+        except:
+            return jsonify([])
+
+@app.route("/api/sprints/<sid>/tasks", methods=["POST"])
+@login_required
+def add_task_to_sprint(sid):
+    d = request.json or {}
+    task_id = d.get("task_id")
+    if not task_id:
+        return jsonify({"error": "task_id required"}), 400
+    with get_db() as db:
+        try:
+            db.execute("INSERT OR IGNORE INTO sprint_tasks (sprint_id, task_id) VALUES (?,?)", (sid, task_id))
+            db.commit()
+            return jsonify({"ok": True})
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # DB MIGRATIONS FOR NEW TABLES
 # ═══════════════════════════════════════════════════════════════════════════════
 def _run_v5_migrations():
     new_ddls = [
-        "ALTER TABLE workspaces ADD COLUMN slack_webhook_url TEXT DEFAULT ''",
+        """CREATE TABLE IF NOT EXISTS sprints (
+            id TEXT PRIMARY KEY, workspace_id TEXT, name TEXT, goal TEXT DEFAULT '',
+            start_date TEXT DEFAULT '', end_date TEXT DEFAULT '',
+            project_id TEXT, status TEXT DEFAULT 'active',
+            created TEXT DEFAULT (datetime('now')))""",
+        """CREATE TABLE IF NOT EXISTS sprint_tasks (
+            sprint_id TEXT, task_id TEXT,
+            PRIMARY KEY (sprint_id, task_id))""",
+        "ALTER TABLE workspaces ADD COLUMN slack_webhook_url TEXT DEFAULT ''",  
         "ALTER TABLE workspaces ADD COLUMN github_client_id TEXT DEFAULT ''",
         "ALTER TABLE workspaces ADD COLUMN github_client_secret TEXT DEFAULT ''",
         "ALTER TABLE workspaces ADD COLUMN github_org TEXT DEFAULT ''",
