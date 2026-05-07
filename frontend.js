@@ -70,21 +70,6 @@ const fmtD=d=>{if(!d)return'—';try{return new Date(d).toLocaleDateString('en-U
 const ago=iso=>{const m=Math.floor((Date.now()-new Date(iso))/60000);if(m<1)return'just now';if(m<60)return m+'m ago';if(m<1440)return Math.floor(m/60)+'h ago';return Math.floor(m/1440)+'d ago';};
 const safe=a=>(Array.isArray(a)?a:[]);
 
-
-function SkeletonCard({lines=2,height=90}){
-  return html`
-    <div class="skeleton skeleton-card" style=${{height,borderRadius:12,marginBottom:8}}></div>`;
-}
-function SkeletonRow({width='100%'}){
-  return html`<div class="skeleton skeleton-text" style=${{width}}></div>`;
-}
-function LoadingSpinner({size=32,color='var(--ac)'}){
-  return html`
-    <div style=${{display:'flex',alignItems:'center',justifyContent:'center',padding:24}}>
-      <div style=${{width:size,height:size,border:'3px solid var(--bd)',borderTop:'3px solid '+color,borderRadius:'50%',animation:'sp .7s linear infinite'}}></div>
-    </div>`;
-}
-
 function Av({u,size=32}){
   const imgSrc=(u&&u.avatar_data&&u.avatar_data.startsWith('data:image'))?u.avatar_data:
                (u&&u.avatar&&u.avatar.length>10&&u.avatar.startsWith('data:image'))?u.avatar:null;
@@ -1298,12 +1283,9 @@ function Sidebar({cu,view,setView,onLogout,unread,dmUnread,col,setCol,wsName,dar
     dashboard:    html`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>`, projects:     html`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>`, tasks:        html`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>`, messages:     html`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`, tickets:      html`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M2 9a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v1.5a1.5 1.5 0 0 0 0 3V15a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-1.5a1.5 1.5 0 0 0 0-3V9z"/><line x1="9" y1="7" x2="9" y2="17" strokeDasharray="2 2"/></svg>`, timeline:     html`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="10" y2="14"/><line x1="8" y1="18" x2="14" y2="18"/></svg>`, productivity: html`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg>`, reminders:    html`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`, team:         html`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`, dm:           html`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,
     'ai-docs':    html`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><circle cx="10" cy="13" r="2"/><path d="M20 21l-4.35-4.35"/></svg>`,
     timesheet:    html`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="4" x2="9" y2="9"/><path d="M7 13h2l1 2 2-4 1 2h2"/></svg>`,
-  'command-center': html`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M7 7l3 3-3 3M13 13h4"/></svg>`,
-  sprints:          html`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>`,
-  'risk-radar':     html`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z"/><path d="M12 12L8 8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v2M22 12h-2M12 22v-2M2 12h2"/></svg>`,
   };
   const adminNav=[
-    {id:'dashboard', label:'Dashboard'}, {id:'projects', label:'Projects'}, {id:'tasks', label:'Kanban Board'}, {id:'messages', label:'Channels'}, {id:'dm', label:'Direct Messages'}, {id:'tickets', label:'Tickets'}, {id:'timeline', label:'Timeline Tracker'}, {id:'productivity',label:'Dev Productivity'}, {id:'reminders', label:'Reminders'}, {id:'team', label:'Team Management'}, {id:'ai-docs', label:'AI Docs', badge:'AI'}, {id:'timesheet', label:'Timesheet', badge:'New', hint:'Shift+L'}, {id:'command-center', label:'Command Center', badge:'AI'}, {id:'sprints', label:'Sprint Board'}, {id:'risk-radar', label:'Risk Radar'}, ];
+    {id:'dashboard', label:'Dashboard'}, {id:'projects', label:'Projects'}, {id:'tasks', label:'Kanban Board'}, {id:'messages', label:'Channels'}, {id:'dm', label:'Direct Messages'}, {id:'tickets', label:'Tickets'}, {id:'timeline', label:'Timeline Tracker'}, {id:'productivity',label:'Dev Productivity'}, {id:'reminders', label:'Reminders'}, {id:'team', label:'Team Management'}, {id:'ai-docs', label:'AI Docs', badge:'AI'}, {id:'timesheet', label:'Timesheet', badge:'New', hint:'Shift+L'}, ];
   const devNav=[
     {id:'dashboard', label:'Dashboard'}, {id:'projects', label:'Projects'}, {id:'tasks', label:'Kanban Board'}, {id:'messages', label:'Channels'}, {id:'dm', label:'Direct Messages'}, {id:'tickets', label:'Tickets'}, {id:'timeline', label:'Timeline'}, {id:'reminders', label:'Reminders'}, {id:'timesheet', label:'Timesheet'}, ];
   const baseNavItems=(isAdminManager?adminNav:devNav).filter(it=>
@@ -4260,7 +4242,7 @@ function MemberRow({u,cu,i,total,reload,ROLE_COLORS}){
   const startTotpSetup=async()=>{
     setTotpMsg('');
     // Only self can setup own TOTP; admin can reset others but not setup for them
-    if(u.id!==cu.id){window._pfToast&&window._pfToast('error','2FA Error','Users must set up their own Authenticator. Use Reset to clear it.');return;}
+    if(u.id!==cu.id){alert('Users must set up their own Authenticator. Use Reset to clear it.');return;}
     const r=await api.post('/api/auth/totp/setup',{});
     if(r.error){setTotpMsg(r.error);return;}
     setTotpData(r);setShowTotpSetup(true);setTotpVerifyToken('');
@@ -4282,7 +4264,7 @@ function MemberRow({u,cu,i,total,reload,ROLE_COLORS}){
     setTwoFaLoading(true);
     const r=await api.post('/api/auth/totp/reset',{user_id:u.id});
     setTwoFaLoading(false);
-    if(r.error){window._pfToast&&window._pfToast('error','Error',r.error);return;}
+    if(r.error){alert(r.error);return;}
     setTotpMsg('✓ 2FA reset');
     setTimeout(()=>{setTotpMsg('');reload&&reload();},1200);
   };
@@ -4291,7 +4273,7 @@ function MemberRow({u,cu,i,total,reload,ROLE_COLORS}){
     setTwoFaLoading(true);
     const r=await api.post('/api/auth/toggle-2fa',{user_id:u.id,enabled:!u.two_fa_enabled});
     setTwoFaLoading(false);
-    if(r.error){window._pfToast&&window._pfToast('error','Error',r.error);}
+    if(r.error){alert(r.error);}
     else reload&&reload();
   };
 
@@ -5031,7 +5013,7 @@ function TwoFASettingsCard({cu}){
     if(!window.confirm('Reset Google Authenticator for '+userName+'? They will need to set it up again.'))return;
     setTogglingId(userId);
     const r=await api.post('/api/auth/totp/reset',{user_id:userId});
-    if(r.error){window._pfToast&&window._pfToast('error','Error',r.error);}
+    if(r.error){alert(r.error);}
     else{setUserTfaList(prev=>prev.map(u=>u.id===userId?{...u,totp_configured:false,totp_verified:0}:u));}
     setTogglingId(null);
   };
@@ -5121,7 +5103,7 @@ function WorkspaceSettings({cu,onReload}){
   };
 
   const sendTestEmail=async()=>{
-    if(!testEmail){window._pfToast&&window._pfToast('error','Missing Email','Please enter an email address');return;}
+    if(!testEmail){alert('Please enter an email address');return;}
     setTestingEmail(true);setTestResult(null);
     const r=await api.post('/api/workspace/test-email',{test_email:testEmail});
     setTestingEmail(false);
@@ -5471,7 +5453,7 @@ function SSOSettingsCard({cu,ws}){
   };
 
   const testMeta=async()=>{
-    if(!metaUrl){window._pfToast&&window._pfToast('error','Missing URL','Enter a metadata URL first');return;}
+    if(!metaUrl){alert('Enter a metadata URL first');return;}
     setTesting(true);setTestResult(null);
     const r=await api.post('/api/sso/test-metadata',{metadata_url:metaUrl});
     setTesting(false);
@@ -7222,7 +7204,7 @@ function App(){
   const _hadSession=(()=>{try{return localStorage.getItem('pf_had_session')==='1';}catch{return false;}})();
   const [loading,setLoading]=useState(_hadSession);
   // Read initial view from URL path or ?page= param
-  const VALID_VIEWS=['dashboard','projects','tasks','messages','dm','tickets','timeline','reminders','settings','team','productivity','ai-docs','timesheet','command-center','sprints','risk-radar','gantt'];
+  const VALID_VIEWS=['dashboard','projects','tasks','messages','dm','tickets','timeline','reminders','settings','team','productivity','ai-docs','timesheet'];
   // Also treat /projects/<id> as valid
   useEffect(()=>{
     try{
@@ -7846,9 +7828,6 @@ function App(){
             ${baseView==='productivity'&&(cu.role==='Admin'||cu.role==='Manager')?html`<${ProductivityView} cu=${cu} tasks=${scopedTasks} projects=${scopedProjects} users=${scopedUsers}/>`:null}
             ${baseView==='ai-docs'?html`<${AiDocsView} cu=${cu} projects=${scopedProjects} tasks=${scopedTasks} users=${data.users}/>`:null}
             ${baseView==='timesheet'?html`<${TimesheetView} cu=${cu} teams=${data.teams} users=${data.users} projects=${scopedProjects} tasks=${scopedTasks}/>`:null}
-            ${baseView==='command-center'?html`<${CommandCenter} cu=${cu} tasks=${scopedTasks} projects=${scopedProjects} users=${scopedUsers} onNav=${setView} activeTeam=${activeTeam}/>`:null}
-            ${baseView==='sprints'?html`<${SprintBoard} cu=${cu} tasks=${scopedTasks} projects=${scopedProjects} users=${scopedUsers} reload=${load}/>`:null}
-            ${baseView==='risk-radar'?html`<${RiskRadar} cu=${cu} tasks=${scopedTasks} projects=${scopedProjects} users=${scopedUsers} onNav=${setView}/>`:null}
             </div>
           <//>
         </div>
@@ -7875,28 +7854,10 @@ function App(){
             ${(()=>{
               const q=(globalSearch||'').trim().toLowerCase();
               if(!q||q.length<1)return html`
-  <div style=${{padding:'12px 16px'}}> 
-    <div style=${{fontSize:11,color:'var(--tx3)',fontWeight:700,marginBottom:8,textTransform:'uppercase',letterSpacing:'.06em'}}>Quick Actions</div>
-    <div style=${{display:'flex',flexDirection:'column',gap:2,marginBottom:12}}>
-      ${[
-        {label:'Command Center',icon:'⚡',view:'command-center',hint:'AI dashboard'},
-        {label:'Sprint Board',icon:'🏃',view:'sprints',hint:'Sprint planning'},
-        {label:'Risk Radar',icon:'🎯',view:'risk-radar',hint:'Risk overview'},
-        {label:'Timeline',icon:'📅',view:'timeline',hint:'Gantt view'},
-        {label:'Productivity',icon:'📈',view:'productivity',hint:'Metrics'},
-        {label:'AI Docs',icon:'🤖',view:'ai-docs',hint:'AI assistant'},
-      ].map(item=>html`
-        <div class="cmd-item" onClick=${()=>{_setView(item.view);setShowGlobalSearch(false);}}>
-          <div class="cmd-item-icon">${item.icon}</div>
-          <span style=${{fontWeight:600,color:'var(--tx)'}}>${item.label}</span>
-          <span style=${{fontSize:11,color:'var(--tx3)',marginLeft:8}}>${item.hint}</span>
-          <span class="cmd-kbd">↵</span>
-        </div>
-      `)}
-    </div>
-    <div style=${{fontSize:11,color:'var(--tx3)',fontWeight:700,marginBottom:6,textTransform:'uppercase',letterSpacing:'.06em'}}>Search by</div>
-    <div style=${{display:'flex',gap:6,flexWrap:'wrap'}}>
-      ${[['Task ID','T-015-305','#1d4ed8'],['Bug','T-xxx bug','#b91c1c'],['Ticket ID','TK-xxx','#c2410c'],['Project name','SecOps','#15803d']].map(([label,ex,color])=>html`
+  <div style=${{padding:'16px 18px'}}> 
+    <div style=${{fontSize:12,color:'var(--tx2)',fontWeight:600,marginBottom:8}}>Search by:</div>
+    <div style=${{display:'flex',gap:8,flexWrap:'wrap'}}>
+      ${[['Task ID','T-015-305','#1d4ed8'],['Bug','T-xxx bug','#b91c1c'],['Ticket ID','TK-xxx','#c2410c'],['Subtask','ST-xxx','#475569'],['Project name','SecOps','#15803d']].map(([label,ex,color])=>html`
         <div style=${{padding:'4px 10px',borderRadius:7,background:color+'11',border:'1px solid '+color+'33',fontSize:11,color,cursor:'pointer',fontWeight:600}}
           onClick=${()=>setGlobalSearch(ex)}>
           ${label}
@@ -8051,557 +8012,3 @@ waitForLibs(window._pfStartApp);
     if(dot){ dot.style.background="#34d399"; dot.title="Live — real-time sync active"; }
   });
 })();
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// COMMAND CENTER — Executive AI Dashboard
-// ═══════════════════════════════════════════════════════════════════════════════
-function CommandCenter({cu,tasks,projects,users,onNav,activeTeam}){
-  const t=safe(tasks);const p=safe(projects);const u=safe(users);
-  const [aiHealth,setAiHealth]=useState(null);
-  const [aiLoading,setAiLoading]=useState(false);
-  const [whatChanged,setWhatChanged]=useState(null);
-  const [changedLoading,setChangedLoading]=useState(false);
-  const [statusReport,setStatusReport]=useState('');
-  const [reportLoading,setReportLoading]=useState(false);
-  const [taskInput,setTaskInput]=useState('');
-  const [breakdown,setBreakdown]=useState(null);
-  const [bdLoading,setBdLoading]=useState(false);
-
-  const done=t.filter(x=>x.stage==='completed').length;
-  const active=t.filter(x=>x.stage!=='completed').length;
-  const blocked=t.filter(x=>x.stage==='blocked').length;
-  const overdue=t.filter(x=>x.due&&new Date(x.due)<new Date()&&x.stage!=='completed').length;
-  const critical=t.filter(x=>x.priority==='critical'&&x.stage!=='completed').length;
-  const healthScore=Math.max(0,Math.min(100,Math.round(
-    100 - (blocked/Math.max(t.length,1))*40 - (overdue/Math.max(t.length,1))*35 - (critical/Math.max(t.length,1))*25
-  )));
-  const healthColor=healthScore>=80?'#22c55e':healthScore>=60?'#f59e0b':'#ef4444';
-  const healthLabel=healthScore>=80?'Healthy':healthScore>=60?'At Risk':'Critical';
-
-  async function loadAiHealth(){
-    setAiLoading(true);
-    try{
-      const r=await api.post('/api/ai/project-health',{project_ids:p.map(x=>x.id),task_summary:{total:t.length,done,active,blocked,overdue,critical}});
-      setAiHealth(r.summary||r.error||'No summary available.');
-    }catch(e){setAiHealth('Error loading health summary.');}
-    setAiLoading(false);
-  }
-
-  async function loadWhatChanged(){
-    setChangedLoading(true);
-    try{
-      const r=await api.post('/api/ai/what-changed',{});
-      setWhatChanged(r.summary||r.error||'Nothing to report.');
-    }catch(e){setWhatChanged('Error loading activity summary.');}
-    setChangedLoading(false);
-  }
-
-  async function generateStatusReport(){
-    setReportLoading(true);
-    try{
-      const r=await api.post('/api/ai/status-report',{tasks:t.slice(0,80),projects:p});
-      setStatusReport(r.report||r.error||'');
-    }catch(e){setStatusReport('Error generating report.');}
-    setReportLoading(false);
-  }
-
-  async function breakdownTask(){
-    if(!taskInput.trim())return;
-    setBdLoading(true);
-    try{
-      const r=await api.post('/api/ai/task-breakdown',{requirement:taskInput});
-      setBreakdown(r.tasks||null);
-    }catch(e){setBreakdown(null);}
-    setBdLoading(false);
-  }
-
-  const projectHealth=p.map(proj=>{
-    const pt=t.filter(x=>x.project===proj.id);
-    const pb=pt.filter(x=>x.stage==='blocked').length;
-    const po=pt.filter(x=>x.due&&new Date(x.due)<new Date()&&x.stage!=='completed').length;
-    const pct=pt.length?Math.round(pt.filter(x=>x.stage==='completed').length/pt.length*100):0;
-    const risk=pb>2||po>3?'high':pb>0||po>1?'medium':'low';
-    return{...proj,total:pt.length,blocked:pb,overdue:po,pct,risk};
-  }).sort((a,b)=>({high:0,medium:1,low:2}[a.risk]-{high:0,medium:1,low:2}[b.risk]));
-
-  const RISK_COLORS={high:'#ef4444',medium:'#f59e0b',low:'#22c55e'};
-  const RISK_BG={high:'rgba(239,68,68,0.1)',medium:'rgba(245,158,11,0.1)',low:'rgba(34,197,94,0.1)'};
-
-  const workloadData=u.map(user=>{
-    const myT=t.filter(x=>x.assignee===user.id&&x.stage!=='completed');
-    return{...user,count:myT.length,blocked:myT.filter(x=>x.stage==='blocked').length};
-  }).sort((a,b)=>b.count-a.count).slice(0,10);
-
-  const stageData=[
-    {name:'Backlog',count:t.filter(x=>x.stage==='backlog').length,color:'#64748b'},
-    {name:'In Progress',count:t.filter(x=>x.stage==='in-progress'||x.stage==='inprogress').length,color:'#3b82f6'},
-    {name:'Review',count:t.filter(x=>x.stage==='review').length,color:'#8b5cf6'},
-    {name:'Blocked',count:t.filter(x=>x.stage==='blocked').length,color:'#ef4444'},
-    {name:'Done',count:t.filter(x=>x.stage==='completed').length,color:'#22c55e'},
-  ];
-  const maxStage=Math.max(...stageData.map(x=>x.count),1);
-
-  return html`
-  <div style=${{height:'100%',overflowY:'auto',padding:'16px 20px',display:'flex',flexDirection:'column',gap:16}}>
-    <!-- Header -->
-    <div style=${{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:8}}>
-      <div>
-        <h2 style=${{margin:0,fontSize:18,fontWeight:800,color:'var(--tx)',letterSpacing:'-0.02em'}}>⚡ Command Center</h2>
-        <p style=${{margin:0,fontSize:12,color:'var(--tx3)'}}>Executive portfolio view · ${new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</p>
-      </div>
-      <div style=${{display:'flex',gap:8}}>
-        <button class="btn bg" onClick=${generateStatusReport} disabled=${reportLoading} style=${{fontSize:12}}>
-          ${reportLoading?'Generating…':'📋 Status Report'}
-        </button>
-        <button class="btn bg" onClick=${loadWhatChanged} disabled=${changedLoading} style=${{fontSize:12,background:'rgba(139,92,246,0.15)',color:'#a78bfa',border:'1px solid rgba(139,92,246,0.3)'}}>
-          ${changedLoading?'Loading…':'🔄 What Changed Today?'}
-        </button>
-      </div>
-    </div>
-
-    <!-- Health Score + KPI Row -->
-    <div style=${{display:'grid',gridTemplateColumns:'180px repeat(5,1fr)',gap:10}}>
-      <!-- Health Score Gauge -->
-      <div style=${{background:'var(--sf)',borderRadius:14,border:'1px solid var(--bd2)',padding:'16px',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:6}}>
-        <div style=${{position:'relative',width:80,height:80}}>
-          <svg width="80" height="80" viewBox="0 0 80 80">
-            <circle cx="40" cy="40" r="32" fill="none" stroke="var(--bd2)" strokeWidth="8"/>
-            <circle cx="40" cy="40" r="32" fill="none" stroke=${healthColor} strokeWidth="8"
-              strokeDasharray=${2*Math.PI*32}
-              strokeDashoffset=${2*Math.PI*32*(1-healthScore/100)}
-              strokeLinecap="round" transform="rotate(-90 40 40)"
-              style=${{transition:'stroke-dashoffset 1s ease'}}/>
-          </svg>
-          <div style=${{position:'absolute',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center'}}>
-            <span style=${{fontSize:18,fontWeight:800,color:healthColor}}>${healthScore}</span>
-          </div>
-        </div>
-        <div style=${{fontSize:11,fontWeight:700,color:healthColor}}>${healthLabel}</div>
-        <div style=${{fontSize:10,color:'var(--tx3)'}}>Portfolio Health</div>
-      </div>
-      ${[
-        {label:'Active Tasks',val:active,color:'#3b82f6',icon:'⚡',nav:'tasks'},
-        {label:'Completed',val:done,color:'#22c55e',icon:'✅',nav:'tasks:stage:completed'},
-        {label:'Blocked',val:blocked,color:'#ef4444',icon:'🚫',nav:'tasks:stage:blocked'},
-        {label:'Overdue',val:overdue,color:'#f59e0b',icon:'⏰',nav:'tasks'},
-        {label:'Critical',val:critical,color:'#dc2626',icon:'🔥',nav:'tasks:priority:critical'},
-      ].map(s=>html`
-        <div key=${s.label} style=${{background:'var(--sf)',borderRadius:14,border:'1px solid var(--bd2)',padding:'14px 12px',cursor:'pointer',transition:'all .15s'}}
-          onClick=${()=>onNav(s.nav)}
-          onMouseEnter=${e=>{e.currentTarget.style.transform='translateY(-2px)';e.currentTarget.style.boxShadow='0 8px 24px rgba(0,0,0,.15)';}}
-          onMouseLeave=${e=>{e.currentTarget.style.transform='';e.currentTarget.style.boxShadow='';}}>
-          <div style=${{fontSize:20}}>${s.icon}</div>
-          <div style=${{fontSize:22,fontWeight:800,color:s.color,margin:'4px 0 2px'}}>${s.val}</div>
-          <div style=${{fontSize:10,color:'var(--tx3)',fontWeight:600}}>${s.label}</div>
-          <div style=${{marginTop:6,height:3,borderRadius:2,background:'var(--bd2)'}}><div style=${{height:'100%',borderRadius:2,background:s.color,width:Math.min(100,s.val/Math.max(t.length,1)*100)+'%',transition:'width 1s ease'}}></div></div>
-        </div>
-      `)}
-    </div>
-
-    <!-- Main Grid: Project Heatmap + Workload + Stage Pipeline -->
-    <div style=${{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:12}}>
-      <!-- Project Risk Heatmap -->
-      <div style=${{background:'var(--sf)',borderRadius:14,border:'1px solid var(--bd2)',padding:'14px',display:'flex',flexDirection:'column',gap:8}}>
-        <div style=${{fontSize:13,fontWeight:700,color:'var(--tx)',marginBottom:2}}>🗺 Project Risk Heatmap</div>
-        <div style=${{display:'flex',flexDirection:'column',gap:6,maxHeight:220,overflowY:'auto'}}>
-          ${projectHealth.map(proj=>html`
-            <div key=${proj.id} style=${{display:'flex',alignItems:'center',gap:8,padding:'6px 8px',borderRadius:8,background:RISK_BG[proj.risk],border:'1px solid '+RISK_COLORS[proj.risk]+'33',cursor:'pointer'}}
-              onClick=${()=>onNav('projects')}>
-              <div style=${{width:8,height:8,borderRadius:2,background:RISK_COLORS[proj.risk],flexShrink:0}}></div>
-              <div style=${{flex:1,minWidth:0}}>
-                <div style=${{fontSize:11,fontWeight:600,color:'var(--tx)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>${proj.name}</div>
-                <div style=${{fontSize:10,color:'var(--tx3)'}}>${proj.total} tasks · ${proj.blocked} blocked · ${proj.overdue} overdue</div>
-              </div>
-              <div style=${{fontSize:10,fontWeight:700,color:RISK_COLORS[proj.risk],textTransform:'uppercase',flexShrink:0}}>${proj.risk}</div>
-              <div style=${{width:28,fontSize:10,fontWeight:700,color:'var(--tx2)',textAlign:'right'}}>${proj.pct}%</div>
-            </div>
-          `)}
-          ${projectHealth.length===0?html`<div style=${{color:'var(--tx3)',fontSize:12,textAlign:'center',padding:'20px 0'}}>No projects yet</div>`:null}
-        </div>
-      </div>
-
-      <!-- Team Workload Matrix -->
-      <div style=${{background:'var(--sf)',borderRadius:14,border:'1px solid var(--bd2)',padding:'14px',display:'flex',flexDirection:'column',gap:8}}>
-        <div style=${{fontSize:13,fontWeight:700,color:'var(--tx)',marginBottom:2}}>👥 Team Workload Matrix</div>
-        <div style=${{display:'flex',flexDirection:'column',gap:5,maxHeight:220,overflowY:'auto'}}>
-          ${workloadData.map(user=>html`
-            <div key=${user.id} style=${{display:'flex',alignItems:'center',gap:8}}>
-              <${Av} u=${user} size=${22}/>
-              <div style=${{flex:1,minWidth:0}}>
-                <div style=${{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:2}}>
-                  <span style=${{fontSize:10,fontWeight:600,color:'var(--tx)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:90}}>${user.name.split(' ')[0]}</span>
-                  <span style=${{fontSize:10,color:user.count>8?'#ef4444':user.count>5?'#f59e0b':'var(--tx3)',fontWeight:user.count>5?700:400}}>${user.count} tasks</span>
-                </div>
-                <div style=${{height:4,background:'var(--bd2)',borderRadius:2}}>
-                  <div style=${{height:'100%',borderRadius:2,background:user.count>8?'#ef4444':user.count>5?'#f59e0b':'#3b82f6',width:Math.min(100,user.count/Math.max(...workloadData.map(x=>x.count),1)*100)+'%',transition:'width 1s ease'}}></div>
-                </div>
-              </div>
-            </div>
-          `)}
-          ${workloadData.length===0?html`<div style=${{color:'var(--tx3)',fontSize:12,textAlign:'center',padding:'20px 0'}}>No team members</div>`:null}
-        </div>
-      </div>
-
-      <!-- Stage Pipeline -->
-      <div style=${{background:'var(--sf)',borderRadius:14,border:'1px solid var(--bd2)',padding:'14px',display:'flex',flexDirection:'column',gap:8}}>
-        <div style=${{fontSize:13,fontWeight:700,color:'var(--tx)',marginBottom:2}}>📊 Stage Pipeline</div>
-        <div style=${{display:'flex',flexDirection:'column',gap:8}}>
-          ${stageData.map(s=>html`
-            <div key=${s.name}>
-              <div style=${{display:'flex',justifyContent:'space-between',marginBottom:3}}>
-                <span style=${{fontSize:11,color:'var(--tx2)',fontWeight:600}}>${s.name}</span>
-                <span style=${{fontSize:11,fontWeight:700,color:s.color}}>${s.count}</span>
-              </div>
-              <div style=${{height:8,background:'var(--bd2)',borderRadius:4}}>
-                <div style=${{height:'100%',borderRadius:4,background:s.color,width:(s.count/maxStage*100)+'%',transition:'width 1s ease'}}></div>
-              </div>
-            </div>
-          `)}
-        </div>
-      </div>
-    </div>
-
-    <!-- AI Row: Health Summary + Task Breakdown -->
-    <div style=${{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
-      <!-- AI Health Summary -->
-      <div style=${{background:'var(--sf)',borderRadius:14,border:'1px solid var(--bd2)',padding:'14px'}}>
-        <div style=${{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
-          <div style=${{fontSize:13,fontWeight:700,color:'var(--tx)'}}>🤖 AI Health Summary</div>
-          <button class="btn bg" onClick=${loadAiHealth} disabled=${aiLoading} style=${{fontSize:11,padding:'4px 10px'}}>
-            ${aiLoading?'Analyzing…':'Analyze →'}
-          </button>
-        </div>
-        ${aiHealth?html`<div style=${{fontSize:12,color:'var(--tx2)',lineHeight:1.6,whiteSpace:'pre-wrap'}}>${aiHealth}</div>`
-          :html`<div style=${{fontSize:12,color:'var(--tx3)',fontStyle:'italic',padding:'12px 0'}}>Click "Analyze →" to get an AI-generated health summary of your portfolio.</div>`}
-      </div>
-
-      <!-- AI Task Breakdown -->
-      <div style=${{background:'var(--sf)',borderRadius:14,border:'1px solid var(--bd2)',padding:'14px'}}>
-        <div style=${{fontSize:13,fontWeight:700,color:'var(--tx)',marginBottom:8}}>✂️ AI Task Breakdown</div>
-        <div style=${{display:'flex',gap:6,marginBottom:8}}>
-          <input class="inp" placeholder="Enter a requirement to break down…" value=${taskInput} onInput=${e=>setTaskInput(e.target.value)}
-            style=${{flex:1,fontSize:12,padding:'7px 10px',height:32}}
-            onKeyDown=${e=>{if(e.key==='Enter')breakdownTask();}}/>
-          <button class="btn bg" onClick=${breakdownTask} disabled=${bdLoading} style=${{fontSize:11,padding:'4px 10px',flexShrink:0}}>${bdLoading?'…':'Break Down'}</button>
-        </div>
-        ${breakdown?html`
-          <div style=${{maxHeight:160,overflowY:'auto',display:'flex',flexDirection:'column',gap:4}}>
-            ${breakdown.map((t2,i)=>html`
-              <div key=${i} style=${{padding:'5px 8px',background:'rgba(59,130,246,0.08)',border:'1px solid rgba(59,130,246,0.2)',borderRadius:6,fontSize:11,color:'var(--tx2)'}}>
-                <span style=${{fontWeight:600,color:'#3b82f6'}}>${i+1}.</span> ${typeof t2==='string'?t2:t2.title||JSON.stringify(t2)}
-              </div>
-            `)}
-          </div>
-        `:null}
-      </div>
-    </div>
-
-    <!-- What Changed Today + Status Report -->
-    ${whatChanged?html`
-      <div style=${{background:'rgba(139,92,246,0.06)',borderRadius:14,border:'1px solid rgba(139,92,246,0.2)',padding:'14px'}}>
-        <div style=${{fontSize:13,fontWeight:700,color:'#a78bfa',marginBottom:6}}>🔄 What Changed Today</div>
-        <div style=${{fontSize:12,color:'var(--tx2)',lineHeight:1.7,whiteSpace:'pre-wrap'}}>${whatChanged}</div>
-      </div>
-    `:null}
-
-    ${statusReport?html`
-      <div style=${{background:'rgba(34,197,94,0.06)',borderRadius:14,border:'1px solid rgba(34,197,94,0.2)',padding:'14px'}}>
-        <div style=${{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
-          <div style=${{fontSize:13,fontWeight:700,color:'#22c55e'}}>📋 Status Report</div>
-          <button class="btn bg" style=${{fontSize:11}} onClick=${()=>{navigator.clipboard.writeText(statusReport);window._pfToast&&window._pfToast('success','Copied!','Status report copied to clipboard');}}>Copy</button>
-        </div>
-        <pre style=${{fontSize:11,color:'var(--tx2)',lineHeight:1.7,whiteSpace:'pre-wrap',margin:0,fontFamily:'inherit'}}>${statusReport}</pre>
-      </div>
-    `:null}
-  </div>`;
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// SPRINT BOARD
-// ═══════════════════════════════════════════════════════════════════════════════
-function SprintBoard({cu,tasks,projects,users,reload}){
-  const t=safe(tasks);const p=safe(projects);
-  const [sprints,setSprints]=useState([]);
-  const [loading,setLoading]=useState(true);
-  const [showCreate,setShowCreate]=useState(false);
-  const [form,setForm]=useState({name:'',start_date:'',end_date:'',project_id:'',goal:''});
-  const [activeSprintId,setActiveSprintId]=useState(null);
-  const [backlog,setBacklog]=useState([]);
-  const [sprintTasks,setSprintTasks]=useState([]);
-  const [aiSummary,setAiSummary]=useState('');
-  const [summaryLoading,setSummaryLoading]=useState(false);
-
-  useEffect(()=>{loadSprints();},[]);
-
-  async function loadSprints(){
-    setLoading(true);
-    try{
-      const r=await api.get('/api/sprints');
-      setSprints(Array.isArray(r)?r:[]);
-      const active=(Array.isArray(r)?r:[]).find(s=>s.status==='active');
-      if(active){setActiveSprintId(active.id);loadSprintTasks(active.id);}
-    }catch(e){}
-    setLoading(false);
-  }
-
-  async function loadSprintTasks(sid){
-    try{
-      const r=await api.get('/api/sprints/'+sid+'/tasks');
-      setSprintTasks(Array.isArray(r)?r:[]);
-    }catch(e){}
-  }
-
-  const activeSprint=sprints.find(s=>s.id===activeSprintId)||sprints[0];
-  const inSprint=new Set(sprintTasks.map(x=>x.id));
-  const backlogTasks=t.filter(x=>!inSprint.has(x.id)&&x.stage!=='completed');
-  const sprintDone=sprintTasks.filter(x=>x.stage==='completed').length;
-  const sprintTotal=sprintTasks.length;
-  const sprintPct=sprintTotal?Math.round(sprintDone/sprintTotal*100):0;
-
-  async function createSprint(){
-    if(!form.name.trim()){window._pfToast&&window._pfToast('error','Required','Sprint name is required');return;}
-    const r=await api.post('/api/sprints',form);
-    if(r.error){window._pfToast&&window._pfToast('error','Error',r.error);return;}
-    window._pfToast&&window._pfToast('success','Sprint Created','New sprint added successfully');
-    setShowCreate(false);setForm({name:'',start_date:'',end_date:'',project_id:'',goal:''});
-    loadSprints();
-  }
-
-  async function addToSprint(taskId){
-    if(!activeSprint){window._pfToast&&window._pfToast('error','No Sprint','Create or select an active sprint first');return;}
-    await api.post('/api/sprints/'+activeSprint.id+'/tasks',{task_id:taskId});
-    loadSprintTasks(activeSprint.id);
-  }
-
-  async function genAiSummary(){
-    if(!activeSprint)return;
-    setSummaryLoading(true);
-    try{
-      const r=await api.post('/api/ai/sprint-summary',{sprint:activeSprint,tasks:sprintTasks});
-      setAiSummary(r.summary||r.error||'');
-    }catch(e){setAiSummary('Error generating summary.');}
-    setSummaryLoading(false);
-  }
-
-  const STAGE_COLS=[
-    {key:'backlog',label:'Backlog',color:'#64748b'},
-    {key:'in-progress',label:'In Progress',color:'#3b82f6'},
-    {key:'review',label:'Review',color:'#8b5cf6'},
-    {key:'completed',label:'Done',color:'#22c55e'},
-  ];
-
-  return html`
-  <div style=${{height:'100%',overflowY:'auto',padding:'16px 20px',display:'flex',flexDirection:'column',gap:14}}>
-    <!-- Header -->
-    <div style=${{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:8}}>
-      <div>
-        <h2 style=${{margin:0,fontSize:18,fontWeight:800,color:'var(--tx)',letterSpacing:'-0.02em'}}>⚡ Sprint Board</h2>
-        ${activeSprint?html`<p style=${{margin:0,fontSize:12,color:'var(--tx3)'}}>${activeSprint.name} · ${activeSprint.start_date||'?'} → ${activeSprint.end_date||'?'}</p>`:null}
-      </div>
-      <div style=${{display:'flex',gap:8}}>
-        ${activeSprint?html`<button class="btn bg" onClick=${genAiSummary} disabled=${summaryLoading} style=${{fontSize:12}}>${summaryLoading?'Generating…':'🤖 AI Sprint Summary'}</button>`:null}
-        <button class="btn bam" onClick=${()=>setShowCreate(true)} style=${{fontSize:12}}>+ New Sprint</button>
-      </div>
-    </div>
-
-    <!-- Sprint selector -->
-    ${sprints.length>0?html`
-    <div style=${{display:'flex',gap:8,flexWrap:'wrap'}}>
-      ${sprints.map(s=>html`
-        <button key=${s.id} onClick=${()=>{setActiveSprintId(s.id);loadSprintTasks(s.id);}}
-          style=${{padding:'5px 12px',borderRadius:20,fontSize:11,fontWeight:600,cursor:'pointer',border:'1px solid',
-            background:activeSprintId===s.id?'rgba(59,130,246,0.15)':'transparent',
-            color:activeSprintId===s.id?'#60a5fa':'var(--tx3)',
-            borderColor:activeSprintId===s.id?'rgba(59,130,246,0.4)':'var(--bd)'}}>
-          ${s.name} <span style=${{opacity:.7,fontWeight:400}}>${s.status}</span>
-        </button>
-      `)}
-    </div>`:null}
-
-    <!-- Sprint progress bar -->
-    ${activeSprint?html`
-    <div style=${{background:'var(--sf)',borderRadius:12,border:'1px solid var(--bd2)',padding:'12px 16px'}}>
-      <div style=${{display:'flex',justifyContent:'space-between',marginBottom:6}}>
-        <span style=${{fontSize:12,fontWeight:700,color:'var(--tx)'}}>${activeSprint.goal||'Sprint Goal not set'}</span>
-        <span style=${{fontSize:12,fontWeight:700,color:'#22c55e'}}>${sprintDone}/${sprintTotal} tasks · ${sprintPct}%</span>
-      </div>
-      <div style=${{height:8,background:'var(--bd2)',borderRadius:4}}>
-        <div style=${{height:'100%',borderRadius:4,background:'#22c55e',width:sprintPct+'%',transition:'width 1s ease'}}></div>
-      </div>
-    </div>`:null}
-
-    <!-- AI Summary -->
-    ${aiSummary?html`
-    <div style=${{background:'rgba(139,92,246,0.07)',border:'1px solid rgba(139,92,246,0.25)',borderRadius:12,padding:'12px 14px'}}>
-      <div style=${{fontSize:12,fontWeight:700,color:'#a78bfa',marginBottom:4}}>🤖 AI Sprint Summary</div>
-      <div style=${{fontSize:12,color:'var(--tx2)',lineHeight:1.6,whiteSpace:'pre-wrap'}}>${aiSummary}</div>
-    </div>`:null}
-
-    <!-- Kanban columns for sprint tasks -->
-    <div style=${{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:10,flex:1}}>
-      ${STAGE_COLS.map(col=>html`
-        <div key=${col.key} style=${{background:'var(--sf)',borderRadius:12,border:'1px solid var(--bd2)',display:'flex',flexDirection:'column',overflow:'hidden'}}>
-          <div style=${{padding:'10px 12px',borderBottom:'1px solid var(--bd)',background:'rgba(0,0,0,.03)',display:'flex',alignItems:'center',gap:6}}>
-            <div style=${{width:8,height:8,borderRadius:2,background:col.color}}></div>
-            <span style=${{fontSize:12,fontWeight:700,color:'var(--tx)'}}>${col.label}</span>
-            <span style=${{marginLeft:'auto',fontSize:11,color:'var(--tx3)',background:'var(--bd)',borderRadius:10,padding:'1px 7px'}}>
-              ${sprintTasks.filter(x=>x.stage===col.key).length}
-            </span>
-          </div>
-          <div style=${{flex:1,overflowY:'auto',padding:'8px',display:'flex',flexDirection:'column',gap:6,maxHeight:340}}>
-            ${sprintTasks.filter(x=>x.stage===col.key).map(task=>html`
-              <div key=${task.id} style=${{background:'var(--bg)',border:'1px solid var(--bd)',borderRadius:8,padding:'8px 10px',cursor:'pointer',transition:'all .12s'}}
-                onMouseEnter=${e=>{e.currentTarget.style.borderColor='rgba(59,130,246,0.5)';e.currentTarget.style.transform='translateY(-1px)';}}
-                onMouseLeave=${e=>{e.currentTarget.style.borderColor='var(--bd)';e.currentTarget.style.transform='';}}>
-                <div style=${{fontSize:11,fontWeight:600,color:'var(--tx)',marginBottom:3}}>${task.title}</div>
-                ${task.assignee?html`<div style=${{fontSize:10,color:'var(--tx3)'}}>${(safe(users).find(u2=>u2.id===task.assignee)||{}).name||'?'}</div>`:null}
-                ${task.priority?html`<span style=${{fontSize:9,padding:'2px 6px',borderRadius:4,background:task.priority==='critical'?'rgba(239,68,68,.15)':'rgba(100,116,139,.12)',color:task.priority==='critical'?'#ef4444':'var(--tx3)',fontWeight:700,textTransform:'uppercase'}}>${task.priority}</span>`:null}
-              </div>
-            `)}
-            ${sprintTasks.filter(x=>x.stage===col.key).length===0?html`
-              <div style=${{textAlign:'center',color:'var(--tx3)',fontSize:11,padding:'16px 0',fontStyle:'italic'}}>No tasks</div>
-            `:null}
-          </div>
-        </div>
-      `)}
-    </div>
-
-    <!-- Backlog section -->
-    <div style=${{background:'var(--sf)',borderRadius:12,border:'1px solid var(--bd2)',padding:'12px 14px'}}>
-      <div style=${{fontSize:13,fontWeight:700,color:'var(--tx)',marginBottom:8}}>📋 Backlog (${backlogTasks.length} tasks available)</div>
-      <div style=${{display:'flex',flexDirection:'column',gap:5,maxHeight:200,overflowY:'auto'}}>
-        ${backlogTasks.slice(0,20).map(task=>html`
-          <div key=${task.id} style=${{display:'flex',alignItems:'center',gap:8,padding:'6px 8px',borderRadius:7,border:'1px solid var(--bd)',background:'var(--bg)'}}>
-            <span style=${{fontSize:10,color:'var(--tx3)',fontWeight:600,flexShrink:0}}>${task.tid||task.id}</span>
-            <span style=${{fontSize:11,flex:1,color:'var(--tx)'}}>${task.title}</span>
-            ${activeSprint?html`<button class="btn bg" onClick=${()=>addToSprint(task.id)} style=${{fontSize:10,padding:'3px 8px',flexShrink:0}}>+ Sprint</button>`:null}
-          </div>
-        `)}
-        ${backlogTasks.length===0?html`<div style=${{color:'var(--tx3)',fontSize:12,textAlign:'center',padding:'12px 0',fontStyle:'italic'}}>All tasks are in sprint or completed!</div>`:null}
-      </div>
-    </div>
-
-    <!-- Create Sprint Modal -->
-    ${showCreate?html`
-    <div style=${{position:'fixed',inset:0,background:'rgba(0,0,0,.5)',zIndex:9000,display:'flex',alignItems:'center',justifyContent:'center',backdropFilter:'blur(4px)'}}
-      onClick=${e=>{if(e.target===e.currentTarget)setShowCreate(false);}}>
-      <div style=${{background:'var(--sf)',borderRadius:16,border:'1px solid var(--bd)',padding:'24px',width:'min(420px,90vw)',display:'flex',flexDirection:'column',gap:12}}>
-        <div style=${{fontSize:15,fontWeight:800,color:'var(--tx)'}}>Create Sprint</div>
-        <input class="inp" placeholder="Sprint name *" value=${form.name} onInput=${e=>setForm(f=>({...f,name:e.target.value}))}/>
-        <input class="inp" placeholder="Sprint goal" value=${form.goal} onInput=${e=>setForm(f=>({...f,goal:e.target.value}))}/>
-        <div style=${{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
-          <div><label style=${{fontSize:10,color:'var(--tx3)',fontWeight:600}}>Start Date</label><input type="date" class="inp" value=${form.start_date} onInput=${e=>setForm(f=>({...f,start_date:e.target.value}))}/></div>
-          <div><label style=${{fontSize:10,color:'var(--tx3)',fontWeight:600}}>End Date</label><input type="date" class="inp" value=${form.end_date} onInput=${e=>setForm(f=>({...f,end_date:e.target.value}))}/></div>
-        </div>
-        <select class="inp" value=${form.project_id} onChange=${e=>setForm(f=>({...f,project_id:e.target.value}))}>
-          <option value="">All Projects</option>
-          ${p.map(proj=>html`<option key=${proj.id} value=${proj.id}>${proj.name}</option>`)}
-        </select>
-        <div style=${{display:'flex',gap:8,justifyContent:'flex-end'}}>
-          <button class="btn" onClick=${()=>setShowCreate(false)}>Cancel</button>
-          <button class="btn bam" onClick=${createSprint}>Create Sprint</button>
-        </div>
-      </div>
-    </div>`:null}
-  </div>`;
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// RISK RADAR
-// ═══════════════════════════════════════════════════════════════════════════════
-function RiskRadar({cu,tasks,projects,users,onNav}){
-  const t=safe(tasks);const p=safe(projects);const u=safe(users);
-  const [aiRisks,setAiRisks]=useState(null);
-  const [loading,setLoading]=useState(false);
-
-  const now=new Date();
-  const overdueT=t.filter(x=>x.due&&new Date(x.due)<now&&x.stage!=='completed');
-  const blockedT=t.filter(x=>x.stage==='blocked');
-  const criticalT=t.filter(x=>x.priority==='critical'&&x.stage!=='completed');
-  const stalledT=t.filter(x=>{
-    if(x.stage==='completed')return false;
-    const created=new Date(x.created||x.updated||0);
-    return (now-created)>7*24*3600*1000;
-  });
-  const unassignedT=t.filter(x=>!x.assignee&&x.stage!=='completed');
-
-  const risks=[
-    {level:'critical',label:'Overdue Tasks',count:overdueT.length,tasks:overdueT,color:'#ef4444',bg:'rgba(239,68,68,0.1)',icon:'🔴',desc:'Tasks past their due date'},
-    {level:'high',label:'Blocked Tasks',count:blockedT.length,tasks:blockedT,color:'#f97316',bg:'rgba(249,115,22,0.1)',icon:'🟠',desc:'Tasks in blocked state'},
-    {level:'high',label:'Critical Priority',count:criticalT.length,tasks:criticalT,color:'#dc2626',bg:'rgba(220,38,38,0.1)',icon:'🔥',desc:'Critical unfinished tasks'},
-    {level:'medium',label:'Stalled Tasks',count:stalledT.length,tasks:stalledT,color:'#f59e0b',bg:'rgba(245,158,11,0.1)',icon:'🟡',desc:'Not updated in 7+ days'},
-    {level:'low',label:'Unassigned Tasks',count:unassignedT.length,tasks:unassignedT,color:'#6366f1',bg:'rgba(99,102,241,0.1)',icon:'🔵',desc:'Tasks with no assignee'},
-  ];
-
-  const totalRiskScore=overdueT.length*4+blockedT.length*3+criticalT.length*4+stalledT.length*2+unassignedT.length*1;
-  const riskLevel=totalRiskScore>30?'CRITICAL':totalRiskScore>15?'HIGH':totalRiskScore>5?'MEDIUM':'LOW';
-  const RISK_BADGE_COLOR={CRITICAL:'#ef4444',HIGH:'#f97316',MEDIUM:'#f59e0b',LOW:'#22c55e'};
-
-  async function getAiRiskAnalysis(){
-    setLoading(true);
-    try{
-      const r=await api.post('/api/ai/risk-analysis',{
-        risks:{overdue:overdueT.length,blocked:blockedT.length,critical:criticalT.length,stalled:stalledT.length,unassigned:unassignedT.length},
-        score:totalRiskScore
-      });
-      setAiRisks(r.analysis||r.error||'');
-    }catch(e){setAiRisks('Error loading analysis.');}
-    setLoading(false);
-  }
-
-  const [expandedRisk,setExpandedRisk]=useState(null);
-
-  return html`
-  <div style=${{height:'100%',overflowY:'auto',padding:'16px 20px',display:'flex',flexDirection:'column',gap:14}}>
-    <div style=${{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:8}}>
-      <div>
-        <h2 style=${{margin:0,fontSize:18,fontWeight:800,color:'var(--tx)'}}>🎯 Risk Radar</h2>
-        <p style=${{margin:0,fontSize:12,color:'var(--tx3)'}}>Identify and track project risks before they escalate</p>
-      </div>
-      <div style=${{display:'flex',alignItems:'center',gap:10}}>
-        <div style=${{padding:'6px 14px',borderRadius:20,background:RISK_BADGE_COLOR[riskLevel]+'22',border:'1px solid '+RISK_BADGE_COLOR[riskLevel]+'44',fontSize:12,fontWeight:700,color:RISK_BADGE_COLOR[riskLevel]}}>
-          Risk: ${riskLevel} (${totalRiskScore} pts)
-        </div>
-        <button class="btn bg" onClick=${getAiRiskAnalysis} disabled=${loading} style=${{fontSize:12}}>
-          ${loading?'Analyzing…':'🤖 AI Risk Analysis'}
-        </button>
-      </div>
-    </div>
-
-    <!-- Risk Cards -->
-    <div style=${{display:'flex',flexDirection:'column',gap:10}}>
-      ${risks.map(r=>html`
-        <div key=${r.label} style=${{background:'var(--sf)',borderRadius:12,border:'1px solid '+r.color+'33',overflow:'hidden'}}>
-          <div style=${{display:'flex',alignItems:'center',gap:12,padding:'12px 14px',cursor:'pointer',background:r.bg}}
-            onClick=${()=>setExpandedRisk(expandedRisk===r.label?null:r.label)}>
-            <span style=${{fontSize:20}}>${r.icon}</span>
-            <div style=${{flex:1}}>
-              <div style=${{fontSize:13,fontWeight:700,color:r.color}}>${r.label}</div>
-              <div style=${{fontSize:11,color:'var(--tx3)'}}>${r.desc}</div>
-            </div>
-            <div style=${{fontSize:24,fontWeight:800,color:r.color,minWidth:40,textAlign:'right'}}>${r.count}</div>
-            <div style=${{fontSize:14,color:'var(--tx3)',transform:expandedRisk===r.label?'rotate(180deg)':'',transition:'transform .2s'}}>▼</div>
-          </div>
-          ${expandedRisk===r.label&&r.tasks.length>0?html`
-          <div style=${{padding:'8px 12px',borderTop:'1px solid '+r.color+'22',maxHeight:200,overflowY:'auto',display:'flex',flexDirection:'column',gap:4}}>
-            ${r.tasks.slice(0,15).map(task=>html`
-              <div key=${task.id} style=${{display:'flex',alignItems:'center',gap:8,padding:'5px 8px',background:'var(--bg)',borderRadius:6,border:'1px solid var(--bd)'}}>
-                <span style=${{fontSize:10,color:'var(--tx3)',flexShrink:0}}>${task.tid||task.id}</span>
-                <span style=${{fontSize:11,flex:1,color:'var(--tx)'}}>${task.title}</span>
-                ${task.due?html`<span style=${{fontSize:10,color:new Date(task.due)<now?'#ef4444':'var(--tx3)',flexShrink:0}}>${task.due}</span>`:null}
-              </div>
-            `)}
-            ${r.tasks.length>15?html`<div style=${{fontSize:11,color:'var(--tx3)',textAlign:'center'}}>+${r.tasks.length-15} more</div>`:null}
-          </div>`:null}
-        </div>
-      `)}
-    </div>
-
-    ${aiRisks?html`
-    <div style=${{background:'rgba(139,92,246,0.07)',border:'1px solid rgba(139,92,246,0.25)',borderRadius:12,padding:'14px'}}>
-      <div style=${{fontSize:13,fontWeight:700,color:'#a78bfa',marginBottom:6}}>🤖 AI Risk Analysis & Recommendations</div>
-      <div style=${{fontSize:12,color:'var(--tx2)',lineHeight:1.7,whiteSpace:'pre-wrap'}}>${aiRisks}</div>
-    </div>`:null}
-  </div>`;
-}
-
