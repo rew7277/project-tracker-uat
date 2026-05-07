@@ -47,3 +47,22 @@ This package includes practical upgrades focused on making the system more power
 8. Bundle frontend assets instead of relying on CDN runtime libraries.
 9. Add Sentry/OpenTelemetry request tracing.
 10. Add a true Gantt drag-and-drop component in the timeline page.
+
+## V12.3 Hotfix - Workspace URL Security False Positive
+
+### Issue fixed
+- Workspace URLs like `/test/ws1778147034358/dashboard` were incorrectly classified as scanner traffic because `/test/` existed in the scanner blocklist.
+- After three false hits, the user's IP was auto-banned and Railway started returning `444`, which prevented the site from opening.
+
+### Fix applied
+- Removed `/test/` from scanner path prefixes.
+- Added `_is_safe_app_path()` to explicitly allow legitimate first-party routes including:
+  - `/api/*`
+  - `/sw.js`
+  - `/dashboard`, `/projects`, etc.
+  - workspace scoped routes like `/<workspace-slug>/<workspace-id>/dashboard`
+- Updated the ban logic so a false-positive ban cannot block valid app/API pages.
+
+### Result
+- Workspace names such as `test`, `uat`, `dev`, or custom org slugs now work correctly.
+- Scanner protection still blocks suspicious file/config/CMS paths.

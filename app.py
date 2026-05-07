@@ -359,7 +359,7 @@ _SCANNER_PREFIXES = (
     '/cgi-bin/', '/cgi/', '/../', '/etc/passwd', '/proc/self',
     '/vendor/', '/composer.', '/node_modules/', '/.DS_Store',
     '/backup/', '/backups/', '/db/', '/database/', '/dumps/',
-    '/old/', '/test/', '/tmp/', '/temp/', '/upload/', '/uploads/',
+    '/old/', '/tmp/', '/temp/', '/upload/', '/uploads/',
     '/media/system/', '/wp-includes/', '/wp-content/',
     '/index/function', '/.dj/', '/adminfuns',
 )
@@ -368,20 +368,45 @@ _SCANNER_EXACT = {
     '/info.php', '/test.php', '/phpinfo.php', '/.env',
 }
 
+def _is_safe_app_path(path):
+    """Return True for legitimate first-party app/API routes.
+
+    Important: workspaces may legitimately have slugs such as /test/<ws_id>/dashboard.
+    Earlier builds treated /test/ as a scanner prefix and then auto-banned the user IP,
+    which caused Railway logs to show 404 first and then 444 for the real dashboard.
+    """
+    p = (path or "/").lower()
+    if p in ("/", "/app", "/dashboard", "/sw.js", "/healthz", "/favicon.ico"):
+        return True
+    if p.startswith(("/api/", "/static/")):
+        return True
+    parts = [x for x in p.strip("/").split("/") if x]
+    if len(parts) >= 2 and parts[1].startswith("ws"):
+        allowed_pages = {
+            "dashboard", "projects", "tasks", "kanban", "messages", "channels",
+            "dm", "settings", "profile", "analytics", "tickets", "timeline",
+            "reminders", "team", "productivity", "ai-docs", "timesheet",
+            "vault", "password-generator", "app", "sso"
+        }
+        return len(parts) == 2 or parts[2] in allowed_pages
+    return False
+
 @app.before_request
 def block_scanners():
     """
     Multi-layer bot/scanner defence:
     Layer 1 — Instant IP ban check (sub-millisecond, no logging)
-    Layer 2 — Path fingerprint matching against 100+ scanner patterns
-    Layer 3 — Auto-ban: IPs that hit 3+ scanner paths are banned 24h
+    Layer 2 — Path fingerprint matching against scanner patterns
+    Layer 3 — Auto-ban scanner paths only, never workspace URLs
     Layer 4 — General rate limit: 120 req/min per IP (burst protection)
     """
     ip   = _client_ip()
     path = request.path.lower()
+    safe_app_path = _is_safe_app_path(path)
 
-    # ── Layer 1: Banned IP — drop immediately ────────────────────────────────
-    if _is_banned(ip):
+    # ── Layer 1: Banned IP — drop scanner/non-app traffic only.
+    # Legitimate app/API routes are still allowed so a false positive cannot lock out users.
+    if _is_banned(ip) and not safe_app_path:
         return '', 444   # Nginx-style silent drop (no body, connection close)
 
     # ── Layer 2: Path fingerprint matching ───────────────────────────────────
@@ -391,7 +416,7 @@ def block_scanners():
         path in _SCANNER_EXACT
     )
 
-    if is_scanner:
+    if is_scanner and not safe_app_path:
         # ── Layer 3: Record hit + auto-ban ───────────────────────────────────
         _record_scanner_hit(ip)
         log.info("[SECURITY] Blocked scanner %s → %s", ip, request.path)
