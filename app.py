@@ -5337,8 +5337,8 @@ def serve_js(fn):
 def serve_sw():
     """Service Worker for background push notifications and offline caching."""
     sw_code = r"""
-// Project Tracker Service Worker v3
-const CACHE = 'pf-v3';
+// Project Tracker Service Worker v12.7 - stale UI cache purge
+const CACHE = 'pf-v12-7-visible-enterprise';
 const ICON = '/favicon.ico';
 
 // Install & cache shell assets
@@ -5350,9 +5350,17 @@ self.addEventListener('activate', e => {
   // Delete ALL old caches so stale requests (e.g. /${imgSrc}) are never replayed
   e.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+      Promise.all(keys.map(k => caches.delete(k)))
     ).then(() => clients.claim())
   );
+});
+
+// Always use network for app shell/pages so new dashboard UI is never hidden by stale cache.
+self.addEventListener('fetch', e => {
+  const req = e.request;
+  if (req.mode === 'navigate' || new URL(req.url).pathname.endsWith('.js') || new URL(req.url).pathname === '/sw.js') {
+    e.respondWith(fetch(req, { cache: 'no-store' }).catch(() => fetch(req)));
+  }
 });
 
 // ── Push notification handler ────────────────────────────────────────────────
